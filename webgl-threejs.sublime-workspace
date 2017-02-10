@@ -1,0 +1,975 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"plane",
+				"planeGeometry"
+			],
+			[
+				"gridS",
+				"gridSizeHeight"
+			],
+			[
+				"grid",
+				"gridSizeWidth"
+			],
+			[
+				"griSi",
+				"gridSizeHeight"
+			],
+			[
+				"pointY",
+				"pointY"
+			],
+			[
+				"gridSize",
+				"gridSizeWidth"
+			],
+			[
+				"generateCit",
+				"generateCityName"
+			],
+			[
+				"generate",
+				"generateWomanNpc"
+			],
+			[
+				"_tileren",
+				"_tilesRenderY\tInt"
+			],
+			[
+				"_last",
+				"_lastSceneY\tFloat"
+			],
+			[
+				"_tiles",
+				"_tilesRenderY\tInt"
+			],
+			[
+				"remo",
+				"removeTiles(...)\tVoid"
+			],
+			[
+				"_groun",
+				"_groundTileLayer\topenfl.display.Tilemap"
+			],
+			[
+				"Sc",
+				"scaleY\tFloat"
+			],
+			[
+				"_tile",
+				"_TILESIZE\tInt"
+			],
+			[
+				"p",
+				"getPhase(  )\tInt"
+			],
+			[
+				"_move",
+				"_moveLeft\tBool"
+			],
+			[
+				"get",
+				"getTileIndex(...)\tInt"
+			],
+			[
+				"tiles",
+				"_TILESIZE\tInt"
+			],
+			[
+				"com",
+				"componentName"
+			],
+			[
+				"Spri",
+				"Sprite\topenfl.display"
+			],
+			[
+				"Recta",
+				"Rectangle\topenfl.geom"
+			],
+			[
+				"_grid",
+				"_gridTileMap"
+			],
+			[
+				"_gr",
+				"_gridTileMap"
+			],
+			[
+				"Ve",
+				"Vector<T>\topenfl"
+			],
+			[
+				"_g",
+				"_gridTileMap"
+			],
+			[
+				"_",
+				"_mainSprite\topenfl.display.Sprite"
+			],
+			[
+				"che",
+				"checkedScene"
+			],
+			[
+				"add",
+				"addChild(...)\topenfl.display.DisplayObject"
+			],
+			[
+				"remove",
+				"removeChild(...)\topenfl.display.DisplayObject"
+			],
+			[
+				"addChil",
+				"addChildAt(...)\topenfl.display.DisplayObject"
+			],
+			[
+				"child",
+				"addChildAt(...)\topenfl.display.DisplayObject"
+			],
+			[
+				"_exit",
+				"_exitGameButtonPushed"
+			],
+			[
+				"_ex",
+				"_exitGameButtonPushed\tvar"
+			],
+			[
+				"_start",
+				"_startGameButtonPushed\tvar"
+			],
+			[
+				"strin",
+				"String\tclass"
+			],
+			[
+				"Void",
+				"Void\tclass"
+			],
+			[
+				"User",
+				"UserInterface\tclass"
+			],
+			[
+				"Mouse",
+				"MouseEvent\topenfl.events"
+			],
+			[
+				"dotPo",
+				"dotPositionY\tvar"
+			],
+			[
+				"my",
+				"_myScene\tPlayingScene"
+			],
+			[
+				"is",
+				"_isReachDestinationPoint\tBool"
+			],
+			[
+				"tilepO",
+				"tilePosY\tInt"
+			],
+			[
+				"Pat",
+				"pathfinder\tpackage"
+			],
+			[
+				"Pa",
+				"Pathfinder\tpathfinder"
+			],
+			[
+				"Vectr",
+				"Vector<T>\thaxe.ds"
+			],
+			[
+				"Vector",
+				"Vector<T>\thaxe.ds"
+			],
+			[
+				"_path",
+				"_pathfinderMap"
+			],
+			[
+				"Pathfin",
+				"pathfinder\tpackage"
+			],
+			[
+				"Pathfi",
+				"PathfinderMap\tclass"
+			],
+			[
+				"PAthfinde",
+				"PathfinderMap\tclass"
+			],
+			[
+				"Bitmap",
+				"Bitmap\topenfl.display"
+			],
+			[
+				"bitmap",
+				"Bitmap\topenfl.display"
+			],
+			[
+				"gr",
+				"gridSize\tInt"
+			],
+			[
+				"tile",
+				"tileGroundSize\tInt"
+			],
+			[
+				"Po",
+				"Point\topenfl.geom"
+			],
+			[
+				"text",
+				"inputText"
+			],
+			[
+				"cells",
+				"cellsArray"
+			],
+			[
+				"cur",
+				"currentId"
+			],
+			[
+				"las",
+				"lastChild"
+			],
+			[
+				"cha",
+				"changeColor"
+			],
+			[
+				"Bit",
+				"Bitmap\topenfl.display"
+			],
+			[
+				"scle",
+				"scaleY\tFloat"
+			],
+			[
+				"Lib",
+				"Lib\topenfl"
+			],
+			[
+				"TextFor",
+				"TextFormatAlign\tflash.text"
+			],
+			[
+				"TextField",
+				"TextField\topenfl.text"
+			],
+			[
+				"onKe",
+				"onKeyDown(...)\tVoid"
+			],
+			[
+				"K",
+				"KEY_DOWN\tString"
+			],
+			[
+				"Ke",
+				"KeyboardEvent\tflash.events"
+			],
+			[
+				"Key",
+				"KeyboardEvent\topenfl.events"
+			],
+			[
+				"ground",
+				"groundType"
+			],
+			[
+				"gro",
+				"groundType\tInt"
+			],
+			[
+				"cure",
+				"currentRockSizeX"
+			],
+			[
+				"last",
+				"lastSizeX"
+			],
+			[
+				"rock",
+				"rocksMinSize\tvar"
+			],
+			[
+				"ro",
+				"rocksMaxSize\tvar"
+			],
+			[
+				"MouseEv",
+				"MouseEvent\topenfl.events"
+			],
+			[
+				"event",
+				"Event\topenfl.events"
+			],
+			[
+				"Mou",
+				"MouseEvent\topenfl.events"
+			],
+			[
+				"Event",
+				"Event\topenfl.events"
+			],
+			[
+				"Rect",
+				"Rectangle\topenfl.geom"
+			],
+			[
+				"Tile",
+				"Tile\topenfl.display"
+			],
+			[
+				"rocks",
+				"rocksMinSize\tInt"
+			],
+			[
+				"genertae",
+				"generateWater(...)\tVoid"
+			],
+			[
+				"create",
+				"createWaterTile(  )\tVoid"
+			],
+			[
+				"maxNub",
+				"maxNumberOfWater\tvar"
+			],
+			[
+				"Rock",
+				"Rock"
+			],
+			[
+				"TextFo",
+				"TextFormat\topenfl.text"
+			],
+			[
+				"dra",
+				"drawRoundRect(...)\tVoid"
+			],
+			[
+				"startGameBut",
+				"startGameButtonText\topenfl.text.TextField"
+			],
+			[
+				"start",
+				"startGameButtonText"
+			],
+			[
+				"s",
+				"Sprite"
+			],
+			[
+				"E",
+				"Event\tclass"
+			],
+			[
+				"weapo",
+				"weaponSprite"
+			],
+			[
+				"remov",
+				"removeChild(...)\topenfl.display.DisplayObject"
+			],
+			[
+				"rem",
+				"removeWeapon(  )\tUnknown<9>"
+			],
+			[
+				"Get",
+				"getSprite(  )\tUnknown<2>"
+			],
+			[
+				"M",
+				"MOUSE_MOVE\tString"
+			],
+			[
+				"mouse",
+				"MouseEvent\tflash.events"
+			],
+			[
+				"set",
+				"setAsBox( hx : Float , hy : Float )\tVoid"
+			],
+			[
+				"B2B",
+				"B2BodyDef\tbox2D.dynamics"
+			],
+			[
+				"turn",
+				"myGameTurnControl\tGameTurnControl"
+			],
+			[
+				"_all",
+				"_allPlayerOnScene\tArray<Dynamic>"
+			],
+			[
+				"Scne",
+				"ScenePlayerActor\tclass"
+			],
+			[
+				"stage",
+				"stageHeight\tInt"
+			],
+			[
+				"tage",
+				"stageWidth\tInt"
+			],
+			[
+				"stag",
+				"stageWidth\tInt"
+			],
+			[
+				"rec",
+				"scrollRect\topenfl.geom.Rectangle"
+			],
+			[
+				"Timer",
+				"Timer\tflash.utils"
+			],
+			[
+				"textF",
+				"TextFieldType\tflash.text"
+			],
+			[
+				"Scene",
+				"ScenePlayerActor\tclass"
+			],
+			[
+				"max",
+				"maxSceneHeight\tInt"
+			],
+			[
+				"sc",
+				"scaleX\tFloat"
+			],
+			[
+				"maxWid",
+				"maxWidthPerPolygon\tFloat"
+			],
+			[
+				"maxWi",
+				"maxWidthPerPolygon\tFloat"
+			],
+			[
+				"coord",
+				"coordsArray\tArray<Dynamic>"
+			],
+			[
+				"cre",
+				"createFixture"
+			],
+			[
+				"polygon",
+				"polygonArray"
+			],
+			[
+				"wor",
+				"worldScale"
+			],
+			[
+				"right",
+				"rightVertexY\tvar"
+			],
+			[
+				"nextR",
+				"nextRightVertexX"
+			],
+			[
+				"left",
+				"leftVertexX"
+			],
+			[
+				"nextRigh",
+				"nextRightVertexY\tvar"
+			],
+			[
+				"next",
+				"nextRightVertexX\tvar"
+			],
+			[
+				"B2Fixture",
+				"B2FixtureDef\tbox2D.dynamics"
+			],
+			[
+				"update",
+				"updateSprite(  )\tVoid"
+			],
+			[
+				"worldS",
+				"worldScale\tInt"
+			],
+			[
+				"_scne",
+				"_scenesToStop\tvar"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "js/game.js",
+			"settings":
+			{
+				"buffer_size": 1141,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "js/services.js",
+			"settings":
+			{
+				"buffer_size": 5156,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "js/framework/classes.ts",
+			"settings":
+			{
+				"buffer_size": 30012,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/projects/webgl-threejs"
+	],
+	"file_history":
+	[
+		"/C/projects/webgl+three_js/Lets test it/index.html",
+		"/C/projects/webgl+three_js/Lets test it/js/framework/classes.ts",
+		"/C/projects/webgl+three_js/Lets test it/js/game.js",
+		"/C/projects/webgl+three_js/Lets test it/js/services.js",
+		"/C/projects/webgl+three_js/Lets test it/js/framework/generators.js",
+		"/C/projects/webgl+three_js/Lets test it/js/graphics.js",
+		"/C/projects/webgl+three_js/Lets test it/js/classes.ts",
+		"/C/Users/Admin/Desktop/shoot-them-all-master/index.html",
+		"/C/Users/Admin/Desktop/shoot-them-all-master/main.js",
+		"/C/Users/Admin/Desktop/shoot-them-all-master/index.css",
+		"/C/Users/Admin/Desktop/Новый текстовый документ.html",
+		"/C/projects/webgl+three_js/Lets test it/js/classes.js",
+		"/C/Users/Admin/Desktop/generateName.html",
+		"/C/projects/DieAnotherDay_v0.11/source/EntitySystem.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Entity.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/GameTile.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/UserInterface.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/PlayingScene.hx",
+		"/C/projects/DieAnotherDay_v0.11/Export/html5/release/bin/index.html",
+		"/C/projects/DieAnotherDay_v0.11/.gitignore",
+		"/C/projects/DieAnotherDay_v0.11/source/Move.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Draw.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/LifeCircle.hx",
+		"/C/projects/BunnyMark/Source/Main.hx",
+		"/C/projects/test/SampleProject/project.xml",
+		"/C/projects/BunnyMark/Source/Bunny.hx",
+		"/C/projects/DieAnotherDay_v0.11_old/source/Entity.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/StartingScene.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/SceneSystem.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/GameSystem.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Coordinates.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Main.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Game.hx",
+		"/C/projects/DieAnotherDay/source/PlayingScene.hx",
+		"/C/projects/DieAnotherDay/source/TileMap.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Scene.hx",
+		"/C/projects/DieAnotherDay/source/Tiles.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/Tile.hx",
+		"/C/projects/DieAnotherDay/source/UserInterface.hx",
+		"/C/projects/DieAnotherDay/source/Game.hx",
+		"/C/projects/DieAnotherDay_v0.11/source/LevelSystem.hx",
+		"/C/projects/DieAnotherDay/source/SceneCharacterActor.hx",
+		"/C/projects/DieAnotherDay/source/WelcomeScene.hx",
+		"/C/projects/DieAnotherDay/source/Main.hx",
+		"/C/projects/DieAnotherDay_v0.11/project.xml",
+		"/C/projects/DieAnotherDay/source/PathfinderMap.hx",
+		"/C/projects/Noname/Data/Scripts/Main.cpp",
+		"/C/projects/New_DieAnotherDay/source/Game.hx",
+		"/C/Users/aakorolev/Downloads/pathfinder-master/demo/src/demo/MapData.hx",
+		"/C/Users/aakorolev/Downloads/pathfinder-master/demo/src/Config.hx",
+		"/C/Users/aakorolev/Downloads/pathfinder-master/demo/src/Main.hx",
+		"/C/projects/DieAnotherDay/source/pathfinder/PathfinderMap.hx",
+		"/C/projects/pathfinder-master/lib/pathfinder/Coordinate.hx",
+		"/C/projects/haxe-astar-master/haxe-astar/src/Main.hx",
+		"/C/projects/haxe-astar-master/haxe-astar/src/statm/explore/haxeAStar/AStar.hx",
+		"/C/projects/haxe-astar-master/README.md",
+		"/C/Users/Admin/Desktop/no_title.html",
+		"/C/Users/Admin/Documents/GitHub/shoot-them-all/main.js",
+		"/C/Users/Admin/Documents/GitHub/shoot-them-all/index.html",
+		"/C/Users/Admin/Documents/GitHub/hory-card-v2.0/index.html",
+		"/C/Users/Admin/Documents/GitHub/hory-card-v2.0/battle.js",
+		"/C/projects/openfl-samples-master/demos/HerokuShaders/Source/Main.hx",
+		"/C/projects/openfl-samples-master/demos/NyanCat/Source/Main.hx",
+		"/C/projects/openfl-samples-master/demos/PiratePig/Source/piratepig/Tile.hx",
+		"/C/projects/openfl-samples-master/demos/BunnyMark/Source/Main.hx",
+		"/C/projects/openfl-samples-master/demos/PiratePig/Source/piratepig/PiratePigGame.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/SceneActor.hx",
+		"/C/projects/DieAnotherDay/project.xml",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/UserInterface.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/Scene.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/Game.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/ScenePlayerActor.hx",
+		"/C/projects/openfl-samples-master/demos/TextAlignment/Source/Main.hx",
+		"/C/projects/openfl-samples-master/demos/BunnyMark/Source/Bunny.hx",
+		"/C/projects/openfl-samples-master/demos/PiratePig/Source/piratepig/PiratePig.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/GameTurnControl.hx",
+		"/C/projects/DieAnotherDay/source/Tile.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/ContactListener.hx",
+		"/C/projects/DieAnotherDay/.gitignore",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/Main.hx",
+		"/C/projects/DieAnotherDay/source/Ball.hx",
+		"/C/projects/DieAnotherDay/source/Platform.hx",
+		"/C/projects/DieAnotherDay/DisplayingABitmap/Source/Main.hx",
+		"/C/projects/DieAnotherDay/DisplayingABitmap/project.xml",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/SceneGroundActor.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/TimeMaster.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/Weapon.hx",
+		"/C/Users/Admin/AppData/Local/Temp/7zO8E55456E/HelloWorld.as",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/Input.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/BotEvent.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/SceneBotActor.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/Camera.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/GameTimer.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/Main.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/PegActor.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/PegEvent.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/EnemyEvent.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/PlayerEvent.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/Actor.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/PlayerActor.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/BallEvent.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/BonusChuteActor.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/source/Camera.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/ArbiStaticActor.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/Project.xml",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/Director.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/Global.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/TimeMaster.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/source/ContactListener.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/Project.xml",
+		"/C/HaxeToolkit/haxe/lib/box2d/1,2,3/samples/TestBed/Source/Main.hx",
+		"/C/Users/Admin/Documents/GitHub/roaches-box2d-haxe/.gitignore",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/Global.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/Actor.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/BonusChuteActor.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/ArbiStaticActor.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/PegActor.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/PlayerActor.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/Project.xml",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/ContactListener.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/Main.hx",
+		"/C/Users/Admin/Desktop/teaching/TooManyShoots/.gitignore",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/BallEvent.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/PegEvent.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/PlayerEvent.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/GameInfo.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/GameMenu.hx",
+		"/c/Users/Admin/Desktop/teaching/TooManyShoots/source/GameScreen.hx"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			");",
+			"checkScene",
+			"tileSize",
+			"lastLeftPoint",
+			"gridSize",
+			"Tile",
+			");\n",
+			"reset",
+			"actorToRemove",
+			"));\n",
+			"m_type",
+			"getType",
+			";\n",
+			");\n",
+			"setV",
+			"Global.world_sprite",
+			"m_physScale",
+			"new",
+			"m_bodyList",
+			"the_w",
+			"size",
+			"set_size",
+			"setSize",
+			"12",
+			"getParent",
+			"removeComponent",
+			"getCompon",
+			"updateUIfightingLog",
+			"updateUIplayerStats",
+			"getData",
+			"this.getData",
+			"this.weapon",
+			"getComponentList",
+			" this.components",
+			" this.parent.components.",
+			"classDefenition",
+			"this.bagVault.1.",
+			"this.bagVault[1]"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"findScene",
+			"_tileSize",
+			"firstLeftPoint",
+			"_gridSize",
+			"Tiles",
+			"world_scale",
+			"w",
+			"W",
+			"classDefinition",
+			"gun.",
+			"gun"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "js/game.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1141,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "js/services.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5156,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "js/framework/classes.ts",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 30012,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/TypeScript/TypeScript.tmLanguage",
+							"translate_tabs_to_spaces": false,
+							"use_tab_stops": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 34.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.doc":
+	{
+		"height": 0.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "webgl-threejs.sublime-project",
+	"replace":
+	{
+		"height": 62.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 152.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
