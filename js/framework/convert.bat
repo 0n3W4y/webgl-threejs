@@ -1,1 +1,3 @@
-C:\Users\Admin\AppData\Roaming\npm>tsc "C:\projects\webgl+three_js\Lets test it\js\framework\classes.ts"
+
+%APPDATA%\npm\tsc "C:\projects\webgl-threejs\js\framework\classes.ts"
+pause

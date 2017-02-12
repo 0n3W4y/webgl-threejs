@@ -6,7 +6,7 @@ class GridPoint {
 
 	public gridId: number;
 	public pointType: number; // 0-liquid, 1 - flat, 2 - cubic;
-	public coverType: number; // 0 - nothing ; 1 - water; 2 - lava; 3 - swamp; 4 - earth; 5 - sand; 6 - road; 7 - forest; 8 - rocks; 9 - city; 10 - foothill;
+	public coverType: number; // 0 - free ; 1 - water; 2 - lava; 3 - swamp; 4 - earth; 5 - sand; 6 - road; 7 - forest; 8 - rocks; 9 - city;
 	public effectType: number; // 0 - nothing, 1 - fire, 2 - wet, 3 - snow, 4- blood;
 	public movementRatio: number; // 1- normal. 2- superfast - 0.1 - minimum speed;
 	public graphicIndex:number; // index need for graphics;
@@ -201,8 +201,28 @@ class GroundMap{
 			coverType = 8;
 		}else if (type == "Forest"){
 			pointType = 2;
-			movementRatio = 0.8;
+			movementRatio = 0.7;
 			coverType = 7;
+		}else if( type == "Swamp" ){
+			pointType = 1;
+			movementRatio = 0.5;
+			coverType = 3;
+		}else if( type == "Earth" ){
+			pointType = 1;
+			movementRatio = 0.8;
+			coverType = 4;
+		}else if( type == "Sand" ){
+			pointType = 1;
+			movementRatio = 0.5;
+			coverType = 5;
+		}else if( type == "Lava" ){
+			pointType = 0;
+			movementRatio = 0;
+			coverType = 2;
+		}else if( type == "Oil" ){
+			pointType = 0;
+			movementRatio = 0;
+			coverType = 0;
 		}
 
 		var liquidAmount = amount || 1; // max 1
@@ -258,7 +278,7 @@ class GroundMap{
 		for ( var i = 0; i < this.logicGrid.length; i++){
 			var point = this.logicGrid[i];
 			var distanceArray = null;
-			if ( point.coverType == 6){ //city 
+			if ( point.coverType == 9){ //city 
 				for (var j = 0; j < this.citiesArray.length; j++){
 					var city = this.citiesArray[j];
 					if ( city.getComponent('City').gridId == i){
@@ -281,11 +301,15 @@ class GroundMap{
 		var newCity = null;
 		var currentCity = city.getComponent('City');
 
-		for (var k = 0; k < citiesArray.length; k++){
+		for( var k = 0; k < citiesArray.length; k++ ){
 			var tempCity = citiesArray[k].getComponent('City');
 			if (tempCity.name != currentCity.name && !tempCity.checkRoadToCity(currentCity.name)){
 				newCity = tempCity;
-				break;
+				if( k > 1 ){
+					var previousCity = citiesArray[k-1].getComponent('City');
+					if( !newCity.checkRoadToCity(previousCity.name) )
+						break;
+				}
 			}
 		}
 
@@ -326,9 +350,9 @@ class GroundMap{
 					var gridIndex = nextPointY*this.height + nextPointX;
 					var point = this.logicGrid[gridIndex];
 
-					if (point.coverType != 6){
-						point.pointType = 1; // earth tile;
-						point.coverType = 3; // road
+					if (point.coverType != 9){
+						point.pointType = 1; // flat tile;
+						point.coverType = 6; // road
 						point.movementRatio = 1; // normal
 					}
 				
@@ -339,9 +363,9 @@ class GroundMap{
 					var gridIndex = nextPointY*this.height + nextPointX;
 					var point = this.logicGrid[gridIndex];
 
-					if (point.coverType != 6){
-						point.pointType = 1; // earth tile;
-						point.coverType = 3; // road
+					if (point.coverType != 9){
+						point.pointType = 1; // flat tile;
+						point.coverType = 6; // road
 						point.movementRatio = 1; // normal
 					}
 				}
@@ -417,6 +441,10 @@ class Graphics {
 	public container:any;
 	public grid:any;
 
+	public directionalLight:any;
+	public hemiLight:any;
+	public spotLight:any;
+
 	public tileSize:number;
 
 	public firstGroundLayer:any;
@@ -457,130 +485,191 @@ class Graphics {
 		this.container.appendChild( this.stats.dom );
 	}
 
-	public createGraphics(mapWidth, mapHeight, gridArray){
+	public showHideGrid( visibility ){
+		if( visibility == "Show" )
+			this.scene.add( this.grid );
+		else
+			this.scene.remove( this.grid );
+	}
+
+	public createGraphics( mapWidth, mapHeight, gridArray ){
+		this.createGraphicGridLines( mapWidth, mapHeight );
 		this.createLight();
 		this.firstGroundLayer = this.createGroundLayerGraphics( 'images/atlas_ground.png', mapWidth, mapHeight, gridArray );
 		this.scene.add( this.firstGroundLayer );
-		this.secondGroundLayer = this.createForestGraphics( 'images/trees.png', mapWidth, mapHeight, gridArray ); //create forest, mountains, briges, roads, cities, and other objects;
-		this.scene.add( this.secondGroundLayer );
+		this.secondGroundLayer = this.createSecondGroundLayerGraphics( 'null', mapWidth, mapHeight, gridArray );
+		//this.scene.add( this.secondGroundLayer );
 
 	}
 
+	private createSecondGroundLayerGraphics( tex, mapWidth, mapHeight, gridArray ){
+		var forest = this.createForestGraphics( 'images/trees.png', mapWidth, mapHeight, gridArray ); //create forest, mountains, briges, roads, cities, and other objects;
+		this.scene.add( forest );
+		this.createMountainGraphics( 'images/mountains.png', mapWidth, mapHeight, gridArray );
+	}
+
 	private createGroundLayerGraphics( newTexture, gridSizeHeight, gridSizeWidth, gridArray ){
-		var waterArray = new Array();
-		var grassArray = new Array();
-		var rockArray = new Array();
-		var earthArray = new Array();
-		var swampArray = new Array();
-		var forestArray = new Array();
-		var foothillArray = new Array();
-		var roadArray = new Array();
-		var cityArray = new Array();
 
-		var planeGeometry;
+		var solidArray = new Array();
+		var liquidArray = new Array();
 
+		var planeGeometry; //ground tile;
 		var textureLoader = new THREE.TextureLoader();
-		var tex = textureLoader.load(newTexture);
+		var tex = textureLoader.load( newTexture );
 
-		var earthMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff , map:tex, shininess: 0} );
-		var waterMaterial = new THREE.MeshStandardMaterial( { color: 0xffffff , map:tex } );
+		var solidMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff , map:tex, shininess: 0, side: THREE.DoubleSide } );
+		var liquidMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff , map:tex, shininess: 25 } );
 
-		//var grass = [new THREE.Vector2(0, .75), new THREE.Vector2(.25, .75), new THREE.Vector2(.25, 1), new THREE.Vector2(0, 1)];
-		//var road = [new THREE.Vector2(.25, .75), new THREE.Vector2(.5, .75), new THREE.Vector2(.5, 1), new THREE.Vector2(.25, 1)];
-		//var rock = [new THREE.Vector2(.5, .75), new THREE.Vector2(.75, .75), new THREE.Vector2(.75, 1), new THREE.Vector2(.5, 1)];
-		var earth = [new THREE.Vector2(0, .5), new THREE.Vector2(.25, .5), new THREE.Vector2(.25, .75), new THREE.Vector2(0, .75)];
-		var water = [new THREE.Vector2(.25, .5), new THREE.Vector2(.5, .5), new THREE.Vector2(.5, .75), new THREE.Vector2(.25, .75)];
-		//var swamp = [new THREE.Vector2(.5, .5), new THREE.Vector2(.75, .5), new THREE.Vector2(.75, .75), new THREE.Vector2(.5, .75)];
-		//var city = [new THREE.Vector2(0, .25), new THREE.Vector2(.25, .25), new THREE.Vector2(.25, .5), new THREE.Vector2(0, .5)];
-		var forest = [new THREE.Vector2(.25, .25), new THREE.Vector2(.5, .25), new THREE.Vector2(.5, .5), new THREE.Vector2(.25, .5)];
-		var foothill = [new THREE.Vector2(.5, .25), new THREE.Vector2(.75, .25), new THREE.Vector2(.75, .5), new THREE.Vector2(.5, .5)];
+		var sand = [new THREE.Vector2(.01, .76), new THREE.Vector2(.24, .76), new THREE.Vector2(.24, .99), new THREE.Vector2(.01, .99)];
+		var road = [new THREE.Vector2(.26, .76), new THREE.Vector2(.49, .76), new THREE.Vector2(.49, .99), new THREE.Vector2(.26, .99)];
+		var rock = [new THREE.Vector2(.51, .76), new THREE.Vector2(.74, .76), new THREE.Vector2(.74, .99), new THREE.Vector2(.51, .99)];
+		var lava = [new THREE.Vector2(.76, .76), new THREE.Vector2(.99, .76), new THREE.Vector2(.99, .99), new THREE.Vector2(.76, .99)];
+		var earth = [new THREE.Vector2(.01, .51), new THREE.Vector2(.24, .51), new THREE.Vector2(.24, .74), new THREE.Vector2(.01, .74)];
+		var water = [new THREE.Vector2(.26, .51), new THREE.Vector2(.49, .51), new THREE.Vector2(.49, .74), new THREE.Vector2(.26, .74)];
+		var swamp = [new THREE.Vector2(.51, .51), new THREE.Vector2(.74, .51), new THREE.Vector2(.74, .74), new THREE.Vector2(.51, .74)];
+		var oil = [new THREE.Vector2(.76, .51), new THREE.Vector2(.99, .51), new THREE.Vector2(.99, .74), new THREE.Vector2(.76, .74)];
+		var city = [new THREE.Vector2(.01, .26), new THREE.Vector2(.24, .26), new THREE.Vector2(.24, .49), new THREE.Vector2(.01, .49)];
+		var forest = [new THREE.Vector2(.26, .26), new THREE.Vector2(.49, .26), new THREE.Vector2(.49, .49), new THREE.Vector2(.26, .49)];
 
 		var mesh;
-
 		var sizeWithStepHeight = (this.tileSize*gridSizeHeight)/2;
 		var sizeWithStepWidth = (this.tileSize*gridSizeWidth)/2;
 		var y = -sizeWithStepHeight;
-
+		 // 0 - free ; 1 - water; 2 - lava; 3 - swamp; 4 - earth; 5 - sand; 6 - road; 7 - forest; 8 - rocks; 9 - city;
 		for ( var i = 0 ; i < gridSizeHeight; i++ ){
 			var x = -sizeWithStepWidth;
 
 			for ( var j = 0; j < gridSizeWidth; j++ ){
 				var pointId = i*gridSizeHeight + j;
 				var point = gridArray[pointId];
-				planeGeometry = new THREE.PlaneGeometry(this.tileSize, this.tileSize, 1);
+				planeGeometry = new THREE.PlaneGeometry( this.tileSize, this.tileSize, 1 );
 
-				if (point.coverType == 1){
+				if( point.coverType == 0 ){
+					//create free; now it's oil;
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ oil[0], oil[1], oil[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ oil[1], oil[2], oil[3] ];
+					mesh = new THREE.Mesh( planeGeometry, liquidMaterial );
+					mesh.rotateX(-1.5708);
+					mesh.position.set(x, 0, y);
+					liquidArray.push( mesh );
+				}
+				else if( point.coverType == 1 ){
 					//create water;
 					planeGeometry.faceVertexUvs[0] = [];
 					planeGeometry.faceVertexUvs[0][0] = [ water[0], water[1], water[3] ];
 					planeGeometry.faceVertexUvs[0][1] = [ water[1], water[2], water[3] ];
-					mesh = new THREE.Mesh( planeGeometry, waterMaterial );
+					mesh = new THREE.Mesh( planeGeometry, liquidMaterial );
 					mesh.rotateX(-1.5708);
 					mesh.position.set(x, 0, y);
-					waterArray.push( mesh );
+					liquidArray.push( mesh );
 				}
-				else if (point.coverType == 4){
+				else if( point.coverType == 2 ){
+					//create lava;
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ lava[0], lava[1], lava[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ lava[1], lava[2], lava[3] ];
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
+					mesh.rotateX(-1.5708);
+					mesh.position.set(x, 0, y);
+					solidArray.push( mesh );
+				}
+				else if( point.coverType == 3 ){
+					//create swamp;
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ swamp[0], swamp[1], swamp[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ swamp[1], swamp[2], swamp[3] ];
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
+					mesh.rotateX(-1.5708);
+					mesh.position.set(x, 0, y);
+					solidArray.push( mesh );
+				}
+				else if( point.coverType == 4 ){
 					//create earth;
 					planeGeometry.faceVertexUvs[0] = [];
 					planeGeometry.faceVertexUvs[0][0] = [ earth[0], earth[1], earth[3] ];
 					planeGeometry.faceVertexUvs[0][1] = [ earth[1], earth[2], earth[3] ];
-					mesh = new THREE.Mesh( planeGeometry, earthMaterial );
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
 					mesh.rotateX(-1.5708);
 					mesh.position.set(x, 0, y);
-					earthArray.push( mesh );
+					solidArray.push( mesh );
+				}
+				else if( point.coverType == 5 ){
+					//create sand;
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ sand[0], sand[1], sand[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ sand[1], sand[2], sand[3] ];
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
+					mesh.rotateX(-1.5708);
+					mesh.position.set(x, 0, y);
+					solidArray.push( mesh );
+				}
+				else if( point.coverType == 6 ){
+					//create road;
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ road[0], road[1], road[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ road[1], road[2], road[3] ];
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
+					mesh.rotateX(-1.5708);
+					mesh.position.set(x, 0, y);
+					solidArray.push( mesh );
 				}
 				else if( point.coverType == 7 ){
+					//create forest
 					planeGeometry.faceVertexUvs[0] = [];
 					planeGeometry.faceVertexUvs[0][0] = [ forest[0], forest[1], forest[3] ];
 					planeGeometry.faceVertexUvs[0][1] = [ forest[1], forest[2], forest[3] ];
-					mesh = new THREE.Mesh( planeGeometry, earthMaterial );
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
 					mesh.rotateX(-1.5708);
 					mesh.position.set(x, 0, y);
-					forestArray.push( mesh );
+					solidArray.push( mesh );
 				}
-				else if( point.coverType == 10 || point.coverType == 8 ){
-					//create foothill;
+				else if( point.coverType == 8 ){
+					//create rock
 					planeGeometry.faceVertexUvs[0] = [];
-					planeGeometry.faceVertexUvs[0][0] = [ foothill[0], foothill[1], foothill[3] ];
-					planeGeometry.faceVertexUvs[0][1] = [ foothill[1], foothill[2], foothill[3] ];
-					mesh = new THREE.Mesh( planeGeometry, earthMaterial );
+					planeGeometry.faceVertexUvs[0][0] = [ rock[0], rock[1], rock[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ rock[1], rock[2], rock[3] ];
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
 					mesh.rotateX(-1.5708);
 					mesh.position.set(x, 0, y);
-					foothillArray.push( mesh );
+					solidArray.push( mesh );
 				}
-				
+				else if( point.coverType == 9 ){
+					//create city;
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ city[0], city[1], city[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ city[1], city[2], city[3] ];
+					mesh = new THREE.Mesh( planeGeometry, solidMaterial );
+					mesh.rotateX(-1.5708);
+					mesh.position.set(x, 0, y);
+					solidArray.push( mesh );
+				}
 
 				x += this.tileSize;
 			}
-
 			y += this.tileSize;
 		}
 
-		var earthGeometry = this.megreMeshes( earthArray );
-		var waterGeometry = this.megreMeshes( waterArray );
-		var foothillGeometry  = this.megreMeshes( foothillArray );
-		var forestGeometry  = this.megreMeshes( forestArray );
+		//merge meshes to 1 global mesh;
+		var solidGeometry = this.megreMeshes( solidArray );
+		var liquidGeometry  = this.megreMeshes( liquidArray );		
 
-		var earthMesh = new THREE.Mesh( earthGeometry, earthMaterial );
+		var solidMesh = new THREE.Mesh( solidGeometry, solidMaterial );
 		//earthMesh.receiveShadow = true;
-		var waterMesh = new THREE.Mesh( waterGeometry, waterMaterial );
-		var foothillMesh = new THREE.Mesh( foothillGeometry, earthMaterial );
-		var forestMesh = new THREE.Mesh( forestGeometry, earthMaterial);
+		var liquidMesh = new THREE.Mesh( liquidGeometry, liquidMaterial );
 
 		var group = new THREE.Group();
 
-		group.add( waterMesh );
-		group.add( earthMesh );
-		group.add( foothillMesh );
-		group.add( forestMesh );
+		group.add( solidMesh );
+		group.add( liquidMesh );
 
 		return group;		
 	}
 
 	private createForestGraphics( tex, gridSizeWidth, gridSizeHeight, gridArray ){
 
-		var treeTileSize = 64;
-		var treesInPoint = 8; // must be a natural, and it can be  always /2 without 0,...
+		var treeTileSize = this.tileSize/2; // 64
+		var treesInPoint = Math.round(Math.sqrt(treeTileSize)); //8
 		var stepTree = Math.floor(this.tileSize / Math.sqrt(treesInPoint));
 		var loader = new THREE.TextureLoader();
 		var texture = loader.load( tex );
@@ -648,7 +737,7 @@ class Graphics {
 		return newMesh;
 	}
 
-	private createMountainGraphics( tex, gridSizeWidth, gridSizeHeight, gridArray ){ //'images/mountains.png'
+	private createMountainGraphics( tex, gridSizeWidth, gridSizeHeight, gridArray ){
 
 		var loader = new THREE.TextureLoader();
 		var texture = loader.load(tex);
@@ -690,10 +779,7 @@ class Graphics {
 					mesh.rotateY(0.7584); // 45 degrees;
 					mesh.rotateZ(1.5708); // 90 degrees;
 					mesh.position.set(x+32, 64, y+32);
-					mountainArray.push( mesh );
-							
-						
-													
+					mountainArray.push( mesh );													
 				}	
 
 				x += this.tileSize;
@@ -712,29 +798,29 @@ class Graphics {
 		//ambientLight;
 		//var ambientLight = new THREE.AmbientLight( 0x404040 );
 		//scene.add( ambientLight );
-
-		var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 );
-		hemiLight.position.set(0, 500, 0);
-		this.scene.add( hemiLight );
+		
+		this.hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffdf, 0.6 );
+		this.hemiLight.position.set(0, 500, 0);
+		this.scene.add( this.hemiLight );
 
 		//direction light;
-		var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
-		directionalLight.position.set( 0, 0.75, 0 ).normalize();
-		this.scene.add( directionalLight );
+		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+		this.directionalLight.position.set( 0, 0.75, 0 ).normalize();
+		this.scene.add( this.directionalLight );
 		//var targetObject = new THREE.Object3D();
 		//scene.add(targetObject);
 		//directionalLight.target = targetObject;
 
 		//spot light
-		var spotLight = new THREE.SpotLight( 0xffffdd, 1, 0, 1.05, 1, 1 ); //color, intensity, distance, angle, penumbra, decay
-		spotLight.position.set( 10000, 10000, 10000 );
+		this.spotLight = new THREE.SpotLight( 0xfffffd, 0.25, 0, 1.05, 1, 1 ); //color, intensity, distance, angle, penumbra, decay
+		this.spotLight.position.set( 10000, 10000, 10000 );
 		//spotLight.castShadow = true;
 		//spotLight.shadow.mapSize.width = 1024;
 		//spotLight.shadow.mapSize.height = 1024;
 		//spotLight.shadow.camera.near = 500;
 		//spotLight.shadow.camera.far = 4000;
 		//spotLight.shadow.camera.fov = 30;
-		this.scene.add( spotLight );
+		this.scene.add( this.spotLight );
 	}
 
 	// Grid

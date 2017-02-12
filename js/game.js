@@ -8,12 +8,6 @@ var graphics;
 
 var ground;
 
-var scene;
-var container;
-var camera;
-var renderer;
-var stats;
-
 
 initLogic();
 createGraphics();
@@ -33,9 +27,12 @@ function initLogic(){
 	ground.generateGroundMapObjects( "Forest", 50, 15, 10, 1, 1, 20 );
 	ground.generateGroundMapObjects( "Rocks", 50, 8, 5, 1, 1, 12 );
 	ground.generateGroundMapObjects( "Lake", 2, 8 );
+	ground.generateGroundMapObjects( "Swamp", 6, 2 );
+	ground.generateGroundMapObjects( "Sand", 4, 6 );
+	ground.generateGroundMapObjects( "Lava", 1, 10 );
 	ground.generateRiver( 0, false, 3, 1, 1, 4, 2 );
 	ground.generateCities( null, 16, 2, 8 );
-	//generateRoadFromCityToCity(1);
+	ground.generateRoadFromCityToCity(1);
 
 }
 

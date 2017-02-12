@@ -115,13 +115,13 @@ function rotateCamera(direction){
 
 function showOrHideGridLine(){
 	if (gridLineShowed){
-		graphics.scene.remove(graphics.grid);
+		graphics.showHideGrid("Hide");
 		gridLineShowed = false;
 		var elem = document.getElementById('gridLine');
 		elem.value = "show grid";
 
 	}else{
-		graphics.scene.add(graphics.grid);
+		graphics.showHideGrid("Show");
 		gridLineShowed = true;
 		var elem = document.getElementById('gridLine');
 		elem.value = "hide grid";
@@ -178,8 +178,8 @@ function render(){
 }
 
 function moveScene(){
-	graphics.camera.position.x = -(targetMoveX * 0.35) / graphics.camera.zoom;
-	graphics.camera.position.z = -(targetMoveY * 0.35) / graphics.camera.zoom;
+	graphics.camera.position.x = -(targetMoveX * 0.75) / graphics.camera.zoom;
+	graphics.camera.position.z = -(targetMoveY * 0.75) / graphics.camera.zoom;
 	graphics.camera.lookAt(new THREE.Vector3(graphics.camera.position.x - 200, graphics.camera.position.y - 100, graphics.camera.position.z - 200));
 }
 /*
