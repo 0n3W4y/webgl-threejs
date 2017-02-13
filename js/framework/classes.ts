@@ -497,15 +497,132 @@ class Graphics {
 		this.createLight();
 		this.firstGroundLayer = this.createGroundLayerGraphics( 'images/atlas_ground.png', mapWidth, mapHeight, gridArray );
 		this.scene.add( this.firstGroundLayer );
-		this.secondGroundLayer = this.createSecondGroundLayerGraphics( 'null', mapWidth, mapHeight, gridArray );
-		//this.scene.add( this.secondGroundLayer );
+		this.secondGroundLayer = this.createSecondGroundLayerGraphics( 'images/atlas_ground_2.png', mapWidth, mapHeight, gridArray );
+		this.scene.add( this.secondGroundLayer );
 
 	}
 
 	private createSecondGroundLayerGraphics( tex, mapWidth, mapHeight, gridArray ){
-		var forest = this.createForestGraphics( 'images/trees.png', mapWidth, mapHeight, gridArray ); //create forest, mountains, briges, roads, cities, and other objects;
-		this.scene.add( forest );
-		this.createMountainGraphics( 'images/mountains.png', mapWidth, mapHeight, gridArray );
+		var treeTileSize = this.tileSize/2; // 64
+		var treesInPoint = Math.round(Math.sqrt(treeTileSize)); //8
+		var stepTree = Math.floor(this.tileSize / Math.sqrt(treesInPoint));
+		var loader = new THREE.TextureLoader();
+		var texture = loader.load( tex );
+		var material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture , shininess: 0, transparent: true, opacity: 1} );
+		var trees = new Array();
+		var mountains = new Array();
+		
+		//trees
+		trees.push( [new THREE.Vector2(0, .75), new THREE.Vector2(.125, .75), new THREE.Vector2(.125, .875), new THREE.Vector2(0, .875)] );
+		trees.push( [new THREE.Vector2(.125, .75), new THREE.Vector2(.25, .75), new THREE.Vector2(.25, .875), new THREE.Vector2(.125, .875)] );
+		trees.push( [new THREE.Vector2(.25, .75), new THREE.Vector2(.375, .75), new THREE.Vector2(.375, .875), new THREE.Vector2(.25, .875)] );
+		trees.push( [new THREE.Vector2(.375, .75), new THREE.Vector2(.5, .75), new THREE.Vector2(.5, .875), new THREE.Vector2(.375, .875)] );
+		trees.push( [new THREE.Vector2(.5, .75), new THREE.Vector2(.625, .75), new THREE.Vector2(.625, .875), new THREE.Vector2(.5, .875)] );
+		trees.push( [new THREE.Vector2(.625, .75), new THREE.Vector2(.75, .75), new THREE.Vector2(.75, .875), new THREE.Vector2(.625, .875)] );
+		trees.push( [new THREE.Vector2(0, .625), new THREE.Vector2(.125, .625), new THREE.Vector2(.125, .75), new THREE.Vector2(0, .75)] );
+		trees.push( [new THREE.Vector2(.125, .625), new THREE.Vector2(.25, .625), new THREE.Vector2(.25, .75), new THREE.Vector2(.125, .75)] );
+		trees.push( [new THREE.Vector2(.25, .625), new THREE.Vector2(.375, .625), new THREE.Vector2(.375, .75), new THREE.Vector2(.25, .75)] );
+		trees.push( [new THREE.Vector2(.375, .625), new THREE.Vector2(.5, .625), new THREE.Vector2(.5, .75), new THREE.Vector2(.375, .75)] );
+		//mountains
+		mountains.push( [new THREE.Vector2(0, .5), new THREE.Vector2(.125, .5), new THREE.Vector2(.125, .625), new THREE.Vector2(0, .625)] );
+		mountains.push( [new THREE.Vector2(.125, .5), new THREE.Vector2(.25, .5), new THREE.Vector2(.25, .625), new THREE.Vector2(.125, .625)] );
+		mountains.push( [new THREE.Vector2(.25, .5), new THREE.Vector2(.375, .5), new THREE.Vector2(.375, .625), new THREE.Vector2(.25, .625)] );
+		mountains.push( [new THREE.Vector2(.375, .5), new THREE.Vector2(.5, .5), new THREE.Vector2(.5, .625), new THREE.Vector2(.375, .625)] );
+		mountains.push( [new THREE.Vector2(.5, .5), new THREE.Vector2(.625, .5), new THREE.Vector2(.625, .625), new THREE.Vector2(.5, .625)] );
+		mountains.push( [new THREE.Vector2(.625, .5), new THREE.Vector2(.75, .5), new THREE.Vector2(.75, .625), new THREE.Vector2(.625, .625)] );
+		mountains.push( [new THREE.Vector2(.75, .5), new THREE.Vector2(.875, .5), new THREE.Vector2(.875, .625), new THREE.Vector2(.75, .625)] );
+
+		mountains.push( [new THREE.Vector2(0, .375), new THREE.Vector2(.125, .375), new THREE.Vector2(.125, .5), new THREE.Vector2(0, .5)] );
+		mountains.push( [new THREE.Vector2(.125, .375), new THREE.Vector2(.25, .375), new THREE.Vector2(.25, .5), new THREE.Vector2(.125, .5)] );
+		mountains.push( [new THREE.Vector2(.25, .375), new THREE.Vector2(.375, .375), new THREE.Vector2(.375, .5), new THREE.Vector2(.25, .5)] );
+		mountains.push( [new THREE.Vector2(.375, .375), new THREE.Vector2(.5, .375), new THREE.Vector2(.5, .5), new THREE.Vector2(.375, .5)] );
+		mountains.push( [new THREE.Vector2(.5, .375), new THREE.Vector2(.625, .375), new THREE.Vector2(.625, .5), new THREE.Vector2(.5, .5)] );
+		mountains.push( [new THREE.Vector2(.625, .375), new THREE.Vector2(.75, .375), new THREE.Vector2(.75, .5), new THREE.Vector2(.625, .5)] );
+		mountains.push( [new THREE.Vector2(.75, .5), new THREE.Vector2(.875, .5), new THREE.Vector2(.875, .625), new THREE.Vector2(.75, .625)] );
+		
+		mountains.push( [new THREE.Vector2(0, .25), new THREE.Vector2(.125, .25), new THREE.Vector2(.125, .375), new THREE.Vector2(0, .375)] );
+		mountains.push( [new THREE.Vector2(.125, .25), new THREE.Vector2(.25, .25), new THREE.Vector2(.25, .375), new THREE.Vector2(.125, .375)] );
+		mountains.push( [new THREE.Vector2(.25, .25), new THREE.Vector2(.375, .25), new THREE.Vector2(.375, .375), new THREE.Vector2(.25, .375)] );
+		mountains.push( [new THREE.Vector2(.375, .25), new THREE.Vector2(.5, .25), new THREE.Vector2(.5, .375), new THREE.Vector2(.375, .375)] );
+		mountains.push( [new THREE.Vector2(.5, .25), new THREE.Vector2(.625, .25), new THREE.Vector2(.625, .375), new THREE.Vector2(.5, .375)] );
+		mountains.push( [new THREE.Vector2(.625, .25), new THREE.Vector2(.75, .25), new THREE.Vector2(.75, .375), new THREE.Vector2(.625, .375)] );
+		mountains.push( [new THREE.Vector2(.75, .25), new THREE.Vector2(.875, .25), new THREE.Vector2(.875, .375), new THREE.Vector2(.75, .375)] );
+		//city
+		var city = [new THREE.Vector2(0, .875), new THREE.Vector2(.125, .875), new THREE.Vector2(.125, 1), new THREE.Vector2(0, 1)];
+
+		var meshArray = new Array(); 
+
+		var sizeWithStepHeight = (this.tileSize*mapHeight)/2;
+		var sizeWithStepWidth = (this.tileSize*mapWidth)/2;
+		var y = -sizeWithStepHeight;
+
+		for ( var i = 0 ; i < mapHeight; i++ ){
+			var x = -sizeWithStepWidth;
+
+			for ( var j = 0; j < mapWidth; j++ ){
+				var pointId = i*mapHeight + j;
+				var point = gridArray[pointId];
+				var mesh;
+
+				if( point.coverType == 7 ){
+					//create forest ( trees );
+					for( var k = -treeTileSize; k <= treeTileSize; k += stepTree ){
+						for( var l = -treeTileSize; l <= treeTileSize; l += stepTree ){
+							var num = Math.random();
+							if( num <= 0.5){
+								//create tree;
+								var rnum = Math.floor(Math.random()*(trees.length));
+								var newTreeGeometry = trees[rnum];
+								var planeGeometry = new THREE.PlaneGeometry( this.tileSize/2, this.tileSize/2, 1 );
+								planeGeometry.faceVertexUvs[0] = [];
+								planeGeometry.faceVertexUvs[0][0] = [ newTreeGeometry[0], newTreeGeometry[1], newTreeGeometry[3] ];
+								planeGeometry.faceVertexUvs[0][1] = [ newTreeGeometry[1], newTreeGeometry[2], newTreeGeometry[3] ];
+								mesh = new THREE.Mesh( planeGeometry, material );
+								mesh.rotateY(0.7584);
+								mesh.rotateZ(1.5708);
+								mesh.position.set(x + k - 4, treeTileSize/2, y + l - 4);
+								meshArray.push( mesh );
+							}
+						}
+					}								
+				}
+				else if( point.coverType == 8 ){
+					//create rocks
+					var rnum = Math.floor(Math.random()*(mountains.length));
+					var newRockGeometry = mountains[rnum];
+					var planeGeometry = new THREE.PlaneGeometry( this.tileSize, this.tileSize, 1 );
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ newRockGeometry[0], newRockGeometry[1], newRockGeometry[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ newRockGeometry[1], newRockGeometry[2], newRockGeometry[3] ];
+					mesh = new THREE.Mesh( planeGeometry, material );
+					mesh.rotateY(0.7584);
+					mesh.rotateZ(1.5708);
+					mesh.position.set( x + this.tileSize/2, this.tileSize/2, y + this.tileSize/2 );
+					meshArray.push( mesh );
+				}
+				else if( point.coverType == 9 ){
+					//create city
+					var planeGeometry = new THREE.PlaneGeometry( this.tileSize, this.tileSize, 1 );
+					planeGeometry.faceVertexUvs[0] = [];
+					planeGeometry.faceVertexUvs[0][0] = [ city[0], city[1], city[3] ];
+					planeGeometry.faceVertexUvs[0][1] = [ city[1], city[2], city[3] ];
+					mesh = new THREE.Mesh( planeGeometry, material );
+					mesh.rotateY(0.7584);
+					mesh.rotateZ(1.5708);
+					mesh.position.set( x + this.tileSize/2, this.tileSize/2, y + this.tileSize/2 );
+					meshArray.push( mesh );
+				}
+
+				x += this.tileSize;
+			}
+
+			y += this.tileSize;
+		}
+
+		var geometry = this.megreMeshes( meshArray );
+		var newMesh = new THREE.Mesh( geometry, material);
+		//newMesh.castShadow = true;
+		return newMesh;
 	}
 
 	private createGroundLayerGraphics( newTexture, gridSizeHeight, gridSizeWidth, gridArray ){
@@ -664,134 +781,6 @@ class Graphics {
 		group.add( liquidMesh );
 
 		return group;		
-	}
-
-	private createForestGraphics( tex, gridSizeWidth, gridSizeHeight, gridArray ){
-
-		var treeTileSize = this.tileSize/2; // 64
-		var treesInPoint = Math.round(Math.sqrt(treeTileSize)); //8
-		var stepTree = Math.floor(this.tileSize / Math.sqrt(treesInPoint));
-		var loader = new THREE.TextureLoader();
-		var texture = loader.load( tex );
-		var planeGeometry;
-		var material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture , shininess: 1, transparent: true, opacity: 1} );
-		
-
-		var tree1 = [new THREE.Vector2(0, .5), new THREE.Vector2(.25, .5), new THREE.Vector2(.25, .75), new THREE.Vector2(0, .75)];
-		var tree2 = [new THREE.Vector2(.25, .5), new THREE.Vector2(.5, .5), new THREE.Vector2(.5, .75), new THREE.Vector2(.25, .75)];
-		var tree3 = [new THREE.Vector2(0, .75), new THREE.Vector2(.25, .75), new THREE.Vector2(.25, 1), new THREE.Vector2(0, 1)];
-		var tree4 = [new THREE.Vector2(.25, .75), new THREE.Vector2(.5, .75), new THREE.Vector2(.5, 1), new THREE.Vector2(.25, 1)];
-		var tree5 = [new THREE.Vector2(.5, .75), new THREE.Vector2(.75, .75), new THREE.Vector2(.75, 1), new THREE.Vector2(.5, 1)];
-		var tree6 = [new THREE.Vector2(.75, .75), new THREE.Vector2(1, .75), new THREE.Vector2(1, 1), new THREE.Vector2(.75, 1)];
-		var trees = [tree1, tree2, tree3, tree4, tree5, tree6];
-
-		var treeArray = new Array(); 
-
-		var sizeWithStepHeight = (this.tileSize*gridSizeHeight)/2;
-		var sizeWithStepWidth = (this.tileSize*gridSizeWidth)/2;
-		var y = -sizeWithStepHeight;
-
-		for ( var i = 0 ; i < gridSizeHeight; i++ ){
-			var x = -sizeWithStepWidth;
-
-			for ( var j = 0; j < gridSizeWidth; j++ ){
-				var pointId = i*gridSizeHeight + j;
-				var point = gridArray[pointId];
-				planeGeometry = new THREE.PlaneGeometry(treeTileSize,treeTileSize, 1);
-
-				if (point.coverType == 7){
-					for( var k = -treeTileSize; k <= treeTileSize; k += stepTree ){
-						for( var l = -treeTileSize; l <= treeTileSize; l += stepTree ){
-							var num = Math.random();
-							if( num <= 0.5){
-								//create tree;
-								var rnum = Math.floor(Math.random()*(trees.length));
-								var newTreeGeometry = trees[rnum];
-								planeGeometry.faceVertexUvs[0] = [];
-								planeGeometry.faceVertexUvs[0][0] = [ newTreeGeometry[0], newTreeGeometry[1], newTreeGeometry[3] ];
-								planeGeometry.faceVertexUvs[0][1] = [ newTreeGeometry[1], newTreeGeometry[2], newTreeGeometry[3] ];
-								var mesh = new THREE.Mesh( planeGeometry, material );
-								mesh.rotateY(0.7584);
-								mesh.rotateZ(1.5708);
-								mesh.position.set(x + k, treeTileSize/2, y + l);
-								treeArray.push( mesh );
-							}
-						}
-					}								
-				}	
-
-				x += this.tileSize;
-			}
-
-			y += this.tileSize;
-		}
-
-		var geometry = new THREE.Geometry();
-		for ( var l = 0; l < treeArray.length; l++ ){
-			treeArray[l].updateMatrix();
-			geometry.merge(treeArray[l].geometry, treeArray[l].matrix);
-		}
-
-		var newMesh = new THREE.Mesh( geometry, material);
-		//newMesh.castShadow = true;
-		return newMesh;
-	}
-
-	private createMountainGraphics( tex, gridSizeWidth, gridSizeHeight, gridArray ){
-
-		var loader = new THREE.TextureLoader();
-		var texture = loader.load(tex);
-		var planeGeometry;
-		var material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture , shininess: 1, transparent: true, opacity: 1} );
-		
-
-		var mountain1 = [new THREE.Vector2(0, .5), new THREE.Vector2(.25, .5), new THREE.Vector2(.25, .75), new THREE.Vector2(0, .75)];
-		var mountain2 = [new THREE.Vector2(.25, .5), new THREE.Vector2(.5, .5), new THREE.Vector2(.5, .75), new THREE.Vector2(.25, .75)];
-		var mountain3 = [new THREE.Vector2(0, .75), new THREE.Vector2(.25, .75), new THREE.Vector2(.25, 1), new THREE.Vector2(0, 1)];
-		var mountain4 = [new THREE.Vector2(.25, .75), new THREE.Vector2(.5, .75), new THREE.Vector2(.5, 1), new THREE.Vector2(.25, 1)];
-		var mountain5 = [new THREE.Vector2(.5, .75), new THREE.Vector2(.75, .75), new THREE.Vector2(.75, 1), new THREE.Vector2(.5, 1)];
-		var mountain6 = [new THREE.Vector2(.5, .5), new THREE.Vector2(.75, .5), new THREE.Vector2(.75, .75), new THREE.Vector2(.5, .75)];
-		var mountains = [mountain1, mountain2, mountain3, mountain4, mountain5, mountain6];
-
-		var mountainArray = new Array(); 
-
-		var sizeWithStepHeight = (this.tileSize*gridSizeHeight)/2;
-		var sizeWithStepWidth = (this.tileSize*gridSizeWidth)/2;
-		var y = -sizeWithStepHeight;
-
-		for ( var i = 0 ; i < gridSizeHeight; i++ ){
-			var x = -sizeWithStepWidth;
-
-			for ( var j = 0; j < gridSizeWidth; j++ ){
-				var pointId = i*gridSizeHeight + j;
-				var point = gridArray[pointId];
-				planeGeometry = new THREE.PlaneGeometry(128,128, 1);
-
-				if (point.coverType == 8){
-
-					//create rock;
-					var rnum = Math.floor(Math.random()*(mountains.length));
-					var newMountainGeometry = mountains[rnum];
-					planeGeometry.faceVertexUvs[0] = [];
-					planeGeometry.faceVertexUvs[0][0] = [ newMountainGeometry[0], newMountainGeometry[1], newMountainGeometry[3] ];
-					planeGeometry.faceVertexUvs[0][1] = [ newMountainGeometry[1], newMountainGeometry[2], newMountainGeometry[3] ];
-					var mesh = new THREE.Mesh( planeGeometry, material );
-					mesh.rotateY(0.7584); // 45 degrees;
-					mesh.rotateZ(1.5708); // 90 degrees;
-					mesh.position.set(x+32, 64, y+32);
-					mountainArray.push( mesh );													
-				}	
-
-				x += this.tileSize;
-			}
-
-			y += this.tileSize;
-		}
-
-		var geometry = this.megreMeshes( mountainArray );
-		var newMesh = new THREE.Mesh( geometry, material);
-		//newMesh.castShadow = true;
-		this.scene.add( newMesh );
 	}
 
 	private createLight(){
