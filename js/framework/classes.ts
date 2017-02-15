@@ -83,7 +83,8 @@ class GroundMap{
 		}
 	}
 
-	public generateCities(type, amount, safeZoneNum, minRad):void{
+	public generateCities( entityRootSystem, type, amount, safeZoneNum, minRad):void{
+		var entityRoot = entityRootSystem;
 		var cityAmount = amount || Math.min(Math.round(this.width/5), Math.round(this.height/5)); // default;
 		var safeZone = safeZoneNum || 2; //default;
 		var minRadius = minRad || Math.round((this.width+this.height)/(2*amount)); //default
@@ -113,7 +114,8 @@ class GroundMap{
 				this.logicGrid[gridId].coverType = 9;
 				this.logicGrid[gridId].pointType = 2;
 				this.logicGrid[gridId].movementRatio = 1;
-				var newCity = new Entity("0", "City");
+				var newCity = entityRoot.createEntity("City");
+				//
 				var component = newCity.createComponent("City");
 				var cityName = this.generateCityName();
 				component.name = cityName;
@@ -844,21 +846,88 @@ class Graphics {
 	}
 }
 
-class Entity {
 
-	public name:string;
-	public id:string;
+class EntityRoot{
+
+	public entitiesArray:Array<any>;
+
+	constructor(){
+		this.entitiesArray = new Array();
+	}
+
+	public createEntity( type , params ):any{
+		var entity;
+		var name;
+		var id;
+
+		if( type == "Player" ){
+			name = "Player";
+			id = "0";
+		}
+
+		entity = new Entity();
+		var component = entity.createComponent( "Type" );
+		component.init( name, id );
+		entity.addComponent( component );
+		this.entitiesArray.push( entity );
+
+		return entity;
+	}
+
+	public removeEntity( id ):any{
+		var index = -1;
+		var result = null;
+		for( var i = 0; i < this.entitiesArray.length; i++ ){
+			var entity = this.entitiesArray[i];
+			if( entity.id == id ){
+				result = entity;
+				index = i;
+				break;
+			}
+		}
+
+		this.entitiesArray.splice( index, 1 );
+
+		return result;
+	}
+
+
+}
+
+
+class Entity {
 
 	private components:Array<any>;
 
-	constructor (newId:string, newName:string){
-		this.name = newName;
-		this.id = newId;
+	constructor (){
 		this.components = new Array();
+	}
+
+	public createComponent( componentName ):any{
+		var component;
+		var id = this.createId;
+		if( componentName == "City" )
+			component = new City( id, this );
+		else if( componentName == "Name" )
+			component = new Name( id, this );
+		else if( componentName == "Type")
+			component = new Type( id, this );
+		else if( componentName == "GridPosition" )
+			component = new GridPosition( id, this );
+		else if( componentName == "Move" )
+			component = new Move( id, this );
+		else if( componentName == "Draw" )
+			component = new Draw( id, this );
+		else{
+			console.log( "Not found component with name" + componentName + "; Error in Entity/createComponent");
+			return null;
+		}
+		return component;
 	}
 
 	public addComponent(component):void{
 		var index = this.checkComponentInComponents(component);
+		component.changeParent( this ); // меняем родителя, если вдруг по каким-то причинам компонент создала другая Entity.
 		if (index == 0){
 			this.components.push(component);
 		}else{
@@ -878,15 +947,6 @@ class Entity {
 		return null;
 	}
 
-	public createComponent(componentName):any{
-		var component;
-		if (componentName == "City"){
-			component = new City("noname", "0");
-		}
-
-		return component;
-	}
-
 	private checkComponentInComponents(component):number{
 		var newComponentName = component.componentName;
 		for (var i = 0; i < this.components.length; i++){
@@ -903,6 +963,11 @@ class Entity {
 		}
 	}
 
+	private createId(){
+		var id = "0";
+		return id;
+	}
+
 
 }
 
@@ -910,36 +975,37 @@ class Component {
 	public id:string;
 	public componentName:string;
 
-	constructor (newName, newId){
+	protected parent:any;
+
+	constructor( newName, newId, parent ){
 		this.id = newId;
 		this.componentName = newName;
+		this.parent = parent;
 	}
 
-	public update(dx){
+	public update( dx ):void{
 
+	}
+
+	public changeParent( newParent ):void{
+		this.parent = newParent;
 	}
 }
 
 class City extends Component {
 
-	public name:string;
 	public roadAmount:number;
 	public roadToCities:Array<string>; // контейнер для генератора, что бы понять, что город соединен с другим городом и дополнительная дорога не нужна;
 	public gridCoordinates:any;
 	public gridId:number;
 
-	constructor (newName, id){
-		super("City", id);
-		this.name = newName;
+	constructor( id, parent ){
+		super("City", id, parent);
 		this.roadAmount = 0;
 		this.roadToCities = new Array();
 	}
 
-	public update(dx){
-
-	}
-
-	public checkRoadToCity(cityName):boolean{
+	public checkRoadToCity( cityName ):boolean{
 		for (var i = 0 ; i < this.roadToCities.length; i++){
 			if (cityName == this.roadToCities[i])
 				return true;
@@ -948,20 +1014,33 @@ class City extends Component {
 		return false;
 	}
 
-	public addRoadToCity(cityName):void{
-		this.roadToCities.push(cityName);
+	public addRoadToCity( cityName ):void{
+		this.roadToCities.push( cityName );
 	}
 }
-/*
+
 class Name extends Component{
 	public name:string;
 	public surname:string;
 
-	constructor(){
+	private namesArray:Array<any>;
+	private surnamesArray:Array<any>;
 
+	constructor( id, parent ){
+		super("Name", id, parent );
 	}
 
-	private generateNpcName(type, race, sex){ //return string;
+	public init( namesArray, surnamesArray ){
+		this.namesArray = namesArray;
+		this.surnamesArray = surnamesArray;
+	}
+
+	public generateName( sex ):void{
+		var firstPartName = this.namesArray[0];
+		var secondPartName = this.namesArray[1];
+		var thirdPartNameMale = this.namesArray[2];
+		var thirdPartNameFemale = this.namesArray[3];
+
 		var fname = Math.floor(Math.random()*firstPartName.length);
 		var sname = Math.floor(Math.random()*secondPartName.length);
 		var tname;
@@ -971,19 +1050,102 @@ class Name extends Component{
 			tname = thirdPartNameFemale[Math.floor(Math.random()*thirdPartNameFemale.length)];
 		}
 
-		var name = firstPartName[fname] + secondPartName[sname] + tname;
-		return name;
+		this.name = firstPartName[fname] + secondPartName[sname] + tname;
 		
 	}
 
-	private generateNpcSurname(type, race){ //return string
+	private generateSurname():void{ 
+		var firstPartSurname = this.surnamesArray[0];
+		var secondPartSurname = this.surnamesArray[1];
+		var thirdPartSurname = this.surnamesArray[2];
+
 		var fname = Math.floor(Math.random()*firstPartSurname.length);
 		var sname = Math.floor(Math.random()*secondPartSurname.length);
 		var tname = Math.floor(Math.random()*thirdPartSurname.length);
 
-		var name = firstPartSurname[fname] + secondPartSurname[sname] + thirdPartSurname[tname];
-		return name;	
+		this.surname = firstPartSurname[fname] + secondPartSurname[sname] + thirdPartSurname[tname];
+			
 	}
 
 }
-*/
+
+class Move extends Component{
+
+	public x:number;
+	public y:number;
+
+	private halfTileSize:number;
+	private gridTileSize:number;
+
+	constructor( id, parent ){
+		super( "Move", id, parent );
+	}
+
+	public init( gridTileSize, tileSize, x, y ):void{
+		this.halfTileSize = tileSize/2;
+		this.gridTileSize = gridTileSize;
+		this.x = x;
+		this.y = y;
+	}
+
+	public move( x, y ):void{
+		this.x += x;
+		this.y += y;
+
+		this.gridMove();
+
+	}
+
+	private gridMove():void{
+		var gridX = Math.floor( this.x/this.gridTileSize + this.halfTileSize );
+		var gridY = Math.floor( this.y/this.gridTileSize + this.halfTileSize );
+
+		var component = this.parent.getComponent( "GridPosition" );
+		component.position.x = gridX;
+		component.position.y = gridY;
+	}
+}
+
+class Draw extends Component{
+
+	public graphicIndex:number;
+	public tileSize:number;
+
+	constructor( id, parent ){
+		super( "Draw", id, parent );
+	}
+
+	public init( tileSize ):void{
+		this.tileSize = tileSize;
+	}
+}
+
+class GridPosition extends Component{
+
+	public position:any;
+
+	constructor( id, parent ){
+		super( "GridPosition", id, parent);
+		this.position = new GridCoordinates( 0, 0 );
+	}
+
+	public changePosition( x, y ){
+		this. position.x = x;
+		this.position.y = y;
+	}
+}
+
+class Type extends Component{
+
+	public entityName:string;
+	public entityId:string;
+
+	constructor( id, parent ){
+		super( "Type", id, parent );		
+	}
+
+	public init( name, entityId ){
+		this.entityName = name;
+		this.entityId = entityId;
+	}
+}

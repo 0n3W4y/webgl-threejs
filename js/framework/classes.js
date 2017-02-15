@@ -60,7 +60,8 @@ var GroundMap = (function () {
             }
         }
     };
-    GroundMap.prototype.generateCities = function (type, amount, safeZoneNum, minRad) {
+    GroundMap.prototype.generateCities = function (entityRootSystem, type, amount, safeZoneNum, minRad) {
+        var entityRoot = entityRootSystem;
         var cityAmount = amount || Math.min(Math.round(this.width / 5), Math.round(this.height / 5)); // default;
         var safeZone = safeZoneNum || 2; //default;
         var minRadius = minRad || Math.round((this.width + this.height) / (2 * amount)); //default
@@ -86,7 +87,8 @@ var GroundMap = (function () {
                 this.logicGrid[gridId].coverType = 9;
                 this.logicGrid[gridId].pointType = 2;
                 this.logicGrid[gridId].movementRatio = 1;
-                var newCity = new Entity("0", "City");
+                var newCity = entityRoot.createEntity("City");
+                //
                 var component = newCity.createComponent("City");
                 var cityName = this.generateCityName();
                 component.name = cityName;
@@ -706,14 +708,69 @@ var Graphics = (function () {
     };
     return Graphics;
 }());
+var EntityRoot = (function () {
+    function EntityRoot() {
+        this.entitiesArray = new Array();
+    }
+    EntityRoot.prototype.createEntity = function (type, params) {
+        var entity;
+        var name;
+        var id;
+        if (type == "Player") {
+            name = "Player";
+            id = "0";
+        }
+        entity = new Entity();
+        var component = entity.createComponent("Type");
+        component.init(name, id);
+        entity.addComponent(component);
+        this.entitiesArray.push(entity);
+        return entity;
+    };
+    EntityRoot.prototype.removeEntity = function (id) {
+        var index = -1;
+        var result = null;
+        for (var i = 0; i < this.entitiesArray.length; i++) {
+            var entity = this.entitiesArray[i];
+            if (entity.id == id) {
+                result = entity;
+                index = i;
+                break;
+            }
+        }
+        this.entitiesArray.splice(index, 1);
+        return result;
+    };
+    return EntityRoot;
+}());
 var Entity = (function () {
-    function Entity(newId, newName) {
-        this.name = newName;
-        this.id = newId;
+    function Entity() {
         this.components = new Array();
     }
+    Entity.prototype.createComponent = function (componentName) {
+        var component;
+        var id = this.createId;
+        if (componentName == "City")
+            component = new City(id, this);
+        else if (componentName == "Name")
+            component = new Name(id, this);
+        else if (componentName == "Type")
+            component = new Type(id, this);
+        else if (componentName == "GridPosition")
+            component = new GridPosition(id, this);
+        else if (componentName == "Move")
+            component = new Move(id, this);
+        else if (componentName == "Draw")
+            component = new Draw(id, this);
+        else {
+            console.log("Not found component with name" + componentName + "; Error in Entity/createComponent");
+            return null;
+        }
+        return component;
+    };
     Entity.prototype.addComponent = function (component) {
         var index = this.checkComponentInComponents(component);
+        component.changeParent(this); // меняем родителя, если вдруг по каким-то причинам компонент создала другая Entity.
         if (index == 0) {
             this.components.push(component);
         }
@@ -731,13 +788,6 @@ var Entity = (function () {
         }
         return null;
     };
-    Entity.prototype.createComponent = function (componentName) {
-        var component;
-        if (componentName == "City") {
-            component = new City("noname", "0");
-        }
-        return component;
-    };
     Entity.prototype.checkComponentInComponents = function (component) {
         var newComponentName = component.componentName;
         for (var i = 0; i < this.components.length; i++) {
@@ -751,28 +801,33 @@ var Entity = (function () {
             this.components[i].update(dx);
         }
     };
+    Entity.prototype.createId = function () {
+        var id = "0";
+        return id;
+    };
     return Entity;
 }());
 var Component = (function () {
-    function Component(newName, newId) {
+    function Component(newName, newId, parent) {
         this.id = newId;
         this.componentName = newName;
+        this.parent = parent;
     }
     Component.prototype.update = function (dx) {
+    };
+    Component.prototype.changeParent = function (newParent) {
+        this.parent = newParent;
     };
     return Component;
 }());
 var City = (function (_super) {
     __extends(City, _super);
-    function City(newName, id) {
-        var _this = _super.call(this, "City", id) || this;
-        _this.name = newName;
+    function City(id, parent) {
+        var _this = _super.call(this, "City", id, parent) || this;
         _this.roadAmount = 0;
         _this.roadToCities = new Array();
         return _this;
     }
-    City.prototype.update = function (dx) {
-    };
     City.prototype.checkRoadToCity = function (cityName) {
         for (var i = 0; i < this.roadToCities.length; i++) {
             if (cityName == this.roadToCities[i])
@@ -785,38 +840,98 @@ var City = (function (_super) {
     };
     return City;
 }(Component));
-/*
-class Name extends Component{
-    public name:string;
-    public surname:string;
-
-    constructor(){
-
+var Name = (function (_super) {
+    __extends(Name, _super);
+    function Name(id, parent) {
+        return _super.call(this, "Name", id, parent) || this;
     }
-
-    private generateNpcName(type, race, sex){ //return string;
-        var fname = Math.floor(Math.random()*firstPartName.length);
-        var sname = Math.floor(Math.random()*secondPartName.length);
+    Name.prototype.init = function (namesArray, surnamesArray) {
+        this.namesArray = namesArray;
+        this.surnamesArray = surnamesArray;
+    };
+    Name.prototype.generateName = function (sex) {
+        var firstPartName = this.namesArray[0];
+        var secondPartName = this.namesArray[1];
+        var thirdPartNameMale = this.namesArray[2];
+        var thirdPartNameFemale = this.namesArray[3];
+        var fname = Math.floor(Math.random() * firstPartName.length);
+        var sname = Math.floor(Math.random() * secondPartName.length);
         var tname;
-        if (sex == 0){ // 0 - man;
-            tname = thirdPartNameMale[Math.floor(Math.random()*thirdPartNameMale.length)];
-        }else{
-            tname = thirdPartNameFemale[Math.floor(Math.random()*thirdPartNameFemale.length)];
+        if (sex == 0) {
+            tname = thirdPartNameMale[Math.floor(Math.random() * thirdPartNameMale.length)];
         }
-
-        var name = firstPartName[fname] + secondPartName[sname] + tname;
-        return name;
-        
+        else {
+            tname = thirdPartNameFemale[Math.floor(Math.random() * thirdPartNameFemale.length)];
+        }
+        this.name = firstPartName[fname] + secondPartName[sname] + tname;
+    };
+    Name.prototype.generateSurname = function () {
+        var firstPartSurname = this.surnamesArray[0];
+        var secondPartSurname = this.surnamesArray[1];
+        var thirdPartSurname = this.surnamesArray[2];
+        var fname = Math.floor(Math.random() * firstPartSurname.length);
+        var sname = Math.floor(Math.random() * secondPartSurname.length);
+        var tname = Math.floor(Math.random() * thirdPartSurname.length);
+        this.surname = firstPartSurname[fname] + secondPartSurname[sname] + thirdPartSurname[tname];
+    };
+    return Name;
+}(Component));
+var Move = (function (_super) {
+    __extends(Move, _super);
+    function Move(id, parent) {
+        return _super.call(this, "Move", id, parent) || this;
     }
-
-    private generateNpcSurname(type, race){ //return string
-        var fname = Math.floor(Math.random()*firstPartSurname.length);
-        var sname = Math.floor(Math.random()*secondPartSurname.length);
-        var tname = Math.floor(Math.random()*thirdPartSurname.length);
-
-        var name = firstPartSurname[fname] + secondPartSurname[sname] + thirdPartSurname[tname];
-        return name;
+    Move.prototype.init = function (gridTileSize, tileSize, x, y) {
+        this.halfTileSize = tileSize / 2;
+        this.gridTileSize = gridTileSize;
+        this.x = x;
+        this.y = y;
+    };
+    Move.prototype.move = function (x, y) {
+        this.x += x;
+        this.y += y;
+        this.gridMove();
+    };
+    Move.prototype.gridMove = function () {
+        var gridX = Math.floor(this.x / this.gridTileSize + this.halfTileSize);
+        var gridY = Math.floor(this.y / this.gridTileSize + this.halfTileSize);
+        var component = this.parent.getComponent("GridPosition");
+        component.position.x = gridX;
+        component.position.y = gridY;
+    };
+    return Move;
+}(Component));
+var Draw = (function (_super) {
+    __extends(Draw, _super);
+    function Draw(id, parent) {
+        return _super.call(this, "Draw", id, parent) || this;
     }
-
-}
-*/ 
+    Draw.prototype.init = function (tileSize) {
+        this.tileSize = tileSize;
+    };
+    return Draw;
+}(Component));
+var GridPosition = (function (_super) {
+    __extends(GridPosition, _super);
+    function GridPosition(id, parent) {
+        var _this = _super.call(this, "GridPosition", id, parent) || this;
+        _this.position = new GridCoordinates(0, 0);
+        return _this;
+    }
+    GridPosition.prototype.changePosition = function (x, y) {
+        this.position.x = x;
+        this.position.y = y;
+    };
+    return GridPosition;
+}(Component));
+var Type = (function (_super) {
+    __extends(Type, _super);
+    function Type(id, parent) {
+        return _super.call(this, "Type", id, parent) || this;
+    }
+    Type.prototype.init = function (name, entityId) {
+        this.entityName = name;
+        this.entityId = entityId;
+    };
+    return Type;
+}(Component));

@@ -22,7 +22,9 @@ function createGraphics(){
 
 function initLogic(){
 	var dataNames = [firstPartCityName, secondPartCityName, thirdPatrCityName];
-	ground = new GroundMap( mapWidth, mapHeight, dataNames );
+	var dataNpcNames = 
+	var dataNpsSurnames = 
+	ground = new GroundMap( mapWidth, mapHeight );
 	ground.fillLogicGrid( "Earth" );
 	ground.generateGroundMapObjects( "Forest", 50, 15, 10, 1, 1, 20 );
 	ground.generateGroundMapObjects( "Rocks", 50, 8, 5, 1, 1, 12 );
@@ -34,6 +36,15 @@ function initLogic(){
 	ground.generateCities( null, 16, 2, 8 );
 	ground.generateRoadFromCityToCity(1);
 
+}
+
+function createPlayer(){
+	var player = new Entity( "0", "Player" );
+	var component = player.createComponent( "Name" );
+	var namesArray = [ firstPartName, secondPartName, thirdPartNameMale, thirdPartNameFemale ];
+	var surnamesArray = [ firstPartSurname, secondPartSurname, thirdPartSurname ];
+	component.init( namesArray, surnamesArray );
+	player.addComponent( component );
 }
 
 /*
