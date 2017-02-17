@@ -1,16 +1,14 @@
 
 
-var tileSizeGraphics = 128; //128 tilesize;
-var mapWidth = 100;
-var mapHeight = 100;
-
 var dataCityNames = [ firstPartCityName, secondPartCityName, thirdPatrCityName ];
 var dataNpcNames = [ firstPartName, secondPartName, thirdPartNameMale, thirdPartNameFemale ];
 var dataNpsSurnames = [ firstPartSurname, secondPartSurname, thirdPartSurname ];
 
-var graphics = new Graphics( tileSizeGraphics );
+var graphics = new Graphics( 128 );
 var entityRoot = new EntityRoot();
-var ground = new GroundMap( mapWidth, mapHeight );
+var ground = new GroundMap( 100, 100 );
+
+var player;
 
 initLogic();
 createGraphics();
@@ -30,9 +28,12 @@ function initLogic(){
 }
 
 function createPlayer(){
-	var player = new Entity( "0", "Player" );
+
+	player = entityRoot.createEntity( "Player" );
 	var component = player.createComponent( "Name" );
-	component.init( namesArray, surnamesArray );
+	component.init( dataNpcNames, dataNpsSurnames );
+	component.generateName(0);
+	component.generateSurname();
 	player.addComponent( component );
 }
 
