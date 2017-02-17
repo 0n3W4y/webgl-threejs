@@ -23,14 +23,27 @@ var GridCoordinates = (function () {
     return GridCoordinates;
 }());
 var GroundMap = (function () {
-    function GroundMap(width, height, dataNames) {
+    function GroundMap(width, height) {
         this.width = width;
         this.height = height;
         this.size = width * height;
         this.logicGrid = new Array();
-        this.citiesArray = new Array();
-        this.dataCityNames = dataNames;
+        this.cityCoordinatesArray = new Array();
     }
+    GroundMap.prototype.generateBiomMap = function (primaryGroundBiom, params) {
+        // генерируем все параметры в определенном порядке
+        var obj = { "Earth": [], "Sand": [], "Forest": [], "Water": [], "Lava": [], "Swamp": [], "Rocks": [], "River": [], "City": [] };
+        this.fillLogicGrid(primaryGroundBiom);
+        for (var key in params) {
+            if (!(obj[key] === undefined))
+                obj[key] = params[key];
+        }
+        for (var prop in obj) {
+            var params = obj[prop];
+            if (params.length > 0)
+                this.generateGroundMapObjects(prop, params);
+        }
+    };
     GroundMap.prototype.fillLogicGrid = function (type) {
         var coverType;
         var pointType;
@@ -44,6 +57,12 @@ var GroundMap = (function () {
             coverType = 5;
             pointType = 1;
             movementRatio = 0.6;
+        }
+        else if (type == "Water") {
+        }
+        else if (type == "Lava") {
+        }
+        else if (type == "Oil") {
         }
         else {
             //default earth
@@ -60,11 +79,11 @@ var GroundMap = (function () {
             }
         }
     };
-    GroundMap.prototype.generateCities = function (entityRootSystem, type, amount, safeZoneNum, minRad) {
-        var entityRoot = entityRootSystem;
-        var cityAmount = amount || Math.min(Math.round(this.width / 5), Math.round(this.height / 5)); // default;
-        var safeZone = safeZoneNum || 2; //default;
-        var minRadius = minRad || Math.round((this.width + this.height) / (2 * amount)); //default
+    GroundMap.prototype.generateCities = function (args) {
+        var cityType = args[0];
+        var cityAmount = args[1] || Math.min(Math.round(this.width / 5), Math.round(this.height / 5)); // default;
+        var safeZone = args[2] || 2; //default;
+        var minRadius = args[3] || Math.round((this.width + this.height) / (2 * cityAmount)); //default
         var temporaryArrayForCheckCoords = new Array();
         for (var i = 0; i < cityAmount; i++) {
             var pointX = Math.floor(Math.random() * (this.width - safeZone * 2) + safeZone);
@@ -87,30 +106,41 @@ var GroundMap = (function () {
                 this.logicGrid[gridId].coverType = 9;
                 this.logicGrid[gridId].pointType = 2;
                 this.logicGrid[gridId].movementRatio = 1;
-                var newCity = entityRoot.createEntity("City");
-                //
-                var component = newCity.createComponent("City");
-                var cityName = this.generateCityName();
-                component.name = cityName;
-                component.gridCoordinates = newCoords;
-                component.gridId = gridId;
-                newCity.addComponent(component);
-                this.citiesArray.push(newCity);
             }
             else {
                 i--;
             }
         }
+        this.cityCoordinatesArray = temporaryArrayForCheckCoords;
     };
     //angular -  будет ли река поворачивать на 90 градусов ( true; false); type - 0 - simple river, 1 - river with lake, 2 - river with solid;
-    GroundMap.prototype.generateRiver = function (type, angular, width, offset, step, maxWidth, minWidth) {
-        var liquidWidth = width || Math.round(this.width * 0.05); //max 5%;
-        var liquidAngulatChanse = angular || false; // no chanse on default;
-        var liquidType = type || 0; //simple river default;
-        var liquidOffset = offset || 1; //max 1;
-        var liquidStep = step || 1; //max 1;
-        var liquidMaxWidth = maxWidth || (liquidWidth + 5); // max +5;
-        var liquidMinWidth = minWidth || 0; // 0 - river can be underground;
+    GroundMap.prototype.generateRiver = function (args) {
+        var type = args[0];
+        var liquidType = args[1] || 0; //simple river default;
+        var liquidAngulatChanse = args[2] || false; // no chanse on default;
+        var liquidWidth = args[3] || Math.round(this.width * 0.05); //max 5%;
+        var liquidOffset = args[4] || 1; //max 1;
+        var liquidStep = args[5] || 1; //max 1;
+        var liquidMaxWidth = args[6] || (liquidWidth + 5); // max +5;
+        var liquidMinWidth = args[7] || 2; // 0 - river can be underground;
+        var pointType;
+        var coverType;
+        var movementRatio;
+        if (type == "Water") {
+            coverType = 1;
+            movementRatio = 0.4;
+            pointType = 0;
+        }
+        else if (type == "Lava") {
+            coverType = 2;
+            movementRatio = 0;
+            pointType = 0;
+        }
+        else if (type == "Oil") {
+            coverType = 0;
+            movementRatio = 0.2;
+            pointType = 0;
+        }
         var startingPointY = Math.floor(Math.random() * (this.height / 2 + 1)); // max start on half of grid on Y;
         var startingPointX = Math.floor(Math.random() * (this.width - liquidWidth + 1));
         var liquidHeight;
@@ -139,20 +169,28 @@ var GroundMap = (function () {
                 //проверяем, принадлежит ли наш индекс строке Y, на которой мы хотим разместить часть объекта;
                 if (gridIndex >= (startingPointY + j) * this.height && gridIndex < (startingPointY + j + 1) * this.height) {
                     var point = this.logicGrid[gridIndex];
-                    point.pointType = 0; // water
-                    point.movementRatio = 0.4;
-                    point.coverType = 1; // water;
+                    point.pointType = pointType; // water
+                    point.movementRatio = movementRatio;
+                    point.coverType = coverType; // water;
                 }
             }
         }
     };
     // generating with WIDTH, so height is static; 
     //offset - есть ли смещение влево или вправо и на сколько, step - на сколько сильно может уменьшаться или увеличиваться объект с каждой последующей Y  координатой;
-    GroundMap.prototype.generateGroundMapObjects = function (type, amount, width, height, offset, step, maxWidth) {
+    GroundMap.prototype.generateGroundMapObjects = function (type, args) {
+        if (type == "River") {
+            this.generateRiver(args);
+            return;
+        }
+        else if (type == "City") {
+            this.generateCities(args);
+            return;
+        }
         var pointType;
         var movementRatio;
         var coverType;
-        if (type == "Lake") {
+        if (type == "Water") {
             pointType = 0;
             movementRatio = 0.4;
             coverType = 1;
@@ -192,12 +230,12 @@ var GroundMap = (function () {
             movementRatio = 0;
             coverType = 0;
         }
-        var liquidAmount = amount || 1; // max 1
-        var liquidWidth = width || Math.round(this.width / 10); // max 10%
-        var liquidHeight = height || Math.round(this.height / 10); // max 10%
-        var liquidOffset = offset || 1; //max 1;
-        var liquidStep = step || 1; //max 1;
-        var liquidMaxWidth = maxWidth || (liquidWidth + 5); // max +5;
+        var liquidAmount = args[0] || 1; // max 1
+        var liquidWidth = args[1] || Math.round(this.width / 10); // max 10%
+        var liquidHeight = args[2] || Math.round(this.height / 10); // max 10%
+        var liquidOffset = args[3] || 1; //max 1;
+        var liquidStep = args[4] || 1; //max 1;
+        var liquidMaxWidth = args[5] || (liquidWidth + 5); // max +5;
         var liquidMinWidth = 1; //default;
         for (var i = 0; i < liquidAmount; i++) {
             // для того, что бы вписать объект, что бы он не выходил за границы, сделаю стартовые точки с учетом длинны и ширины объекта.
@@ -236,9 +274,9 @@ var GroundMap = (function () {
             var point = this.logicGrid[i];
             var distanceArray = null;
             if (point.coverType == 9) {
-                for (var j = 0; j < this.citiesArray.length; j++) {
-                    var city = this.citiesArray[j];
-                    if (city.getComponent('City').gridId == i) {
+                for (var j = 0; j < this.cityCoordinatesArray.length; j++) {
+                    var city = this.cityCoordinatesArray[j];
+                    if (city.getComponent('GridPosition').gridId == i) {
                         distanceArray = this.calculateDistanceFromCity(city);
                         break;
                     }
@@ -324,14 +362,15 @@ var GroundMap = (function () {
         var dsArray = new Array();
         var temporary = new Array();
         var result = new Array();
-        var pointX = city.getComponent("City").gridCoordinates.x;
-        var pointY = city.getComponent("City").gridCoordinates.y;
+        var pointX = city.getComponent("GridPosition").position.x;
+        var pointY = city.getComponent("GridPosition").position.y;
         //собираем информацию о дистанции до города со всех городов.
-        for (var i = 0; i < this.citiesArray.length; i++) {
-            var newCity = this.citiesArray[i];
-            var newCityName = newCity.getComponent('City').name;
-            var newPointX = newCity.getComponent("City").gridCoordinates.x;
-            var newPointY = newCity.getComponent("City").gridCoordinates.y;
+        for (var i = 0; i < this.cityCoordinatesArray.length; i++) {
+            var newCity = this.cityCoordinatesArray[i];
+            var newCityName = newCity.getComponent('Name').surname;
+            //
+            var newPointX = newCity.getComponent("GridPosition").position.x;
+            var newPointY = newCity.getComponent("GridPosition").position.y;
             var difX = Math.abs(pointX - newPointX);
             var difY = Math.abs(pointX - newPointX);
             var dif = Math.round(Math.sqrt(difX * difX + difY * difY));
@@ -343,22 +382,34 @@ var GroundMap = (function () {
         for (var j = 0; j < dsArray.length; j++) {
             var searchNum = temporary[j];
             var index = dsArray.indexOf(searchNum);
-            result.push(this.citiesArray[index]);
+            result.push(this.cityCoordinatesArray[index]);
         }
         return result;
     };
-    GroundMap.prototype.generateCityName = function () {
-        var fname = Math.floor(Math.random() * this.dataCityNames[0].length);
-        var sname = Math.floor(Math.random() * this.dataCityNames[1].length);
-        var tname = Math.floor(Math.random() * this.dataCityNames[2].length);
-        var name = this.dataCityNames[0][fname] + this.dataCityNames[1][sname] + this.dataCityNames[2][tname];
-        return name;
+    GroundMap.prototype.createCityEntities = function (entityRoot, namesArray) {
+        for (var i = 0; i < this.cityCoordinatesArray.length; i++) {
+            var coordinates = this.cityCoordinatesArray[i];
+            var newCity = entityRoot.createEntity("City");
+            var component = newCity.createComponent("City");
+            newCity.addComponent(component);
+            component = newCity.createComponent("Name");
+            component.init(namesArray[0], namesArray[1]);
+            component.generateSurname();
+            newCity.addComponent(component);
+            component = newCity.createComponent("GridPosition");
+            component.changePosition(coordinates.x, coordinates.y);
+            component.gridId = this.height * coordinates.y + coordinates.x;
+            newCity.addComponent(component);
+            //заменяем внутри массива значение с простыми координатами на ссылку, полученную в результате создания Entity. Это необходмо для работы функции прокладки дороги.
+            this.cityCoordinatesArray[i] = newCity;
+        }
     };
     return GroundMap;
 }());
 var Graphics = (function () {
     function Graphics(tileSize) {
         this.tileSize = tileSize;
+        this.init();
     }
     Graphics.prototype.init = function () {
         //primary DOM element;
@@ -516,7 +567,7 @@ var Graphics = (function () {
         var planeGeometry; //ground tile;
         var textureLoader = new THREE.TextureLoader();
         var tex = textureLoader.load(newTexture);
-        var solidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, map: tex, shininess: 0, side: THREE.DoubleSide });
+        var solidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, map: tex, shininess: 0 });
         var liquidMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, map: tex, shininess: 25 });
         var sand = [new THREE.Vector2(.01, .76), new THREE.Vector2(.24, .76), new THREE.Vector2(.24, .99), new THREE.Vector2(.01, .99)];
         var road = [new THREE.Vector2(.26, .76), new THREE.Vector2(.49, .76), new THREE.Vector2(.49, .99), new THREE.Vector2(.26, .99)];
@@ -712,18 +763,24 @@ var EntityRoot = (function () {
     function EntityRoot() {
         this.entitiesArray = new Array();
     }
-    EntityRoot.prototype.createEntity = function (type, params) {
+    EntityRoot.prototype.createEntity = function (type) {
         var entity;
         var name;
-        var id;
+        var id = this.createId();
         if (type == "Player") {
             name = "Player";
-            id = "0";
         }
-        entity = new Entity();
-        var component = entity.createComponent("Type");
-        component.init(name, id);
-        entity.addComponent(component);
+        else if (type == "City") {
+            name = "City";
+        }
+        else if (type == "Mob") {
+            name = 'Mob';
+        }
+        else if (type == "NPC") {
+            name = "NPC";
+        }
+        var index = this.entitiesArray.length;
+        entity = new Entity(name, id, index);
         this.entitiesArray.push(entity);
         return entity;
     };
@@ -732,7 +789,7 @@ var EntityRoot = (function () {
         var result = null;
         for (var i = 0; i < this.entitiesArray.length; i++) {
             var entity = this.entitiesArray[i];
-            if (entity.id == id) {
+            if (entity.getComponent('Type').entityId == id) {
                 result = entity;
                 index = i;
                 break;
@@ -741,29 +798,49 @@ var EntityRoot = (function () {
         this.entitiesArray.splice(index, 1);
         return result;
     };
+    EntityRoot.prototype.getEntityById = function (id) {
+        for (var i = 0; i < this.entitiesArray.length; i++) {
+            var entityId = this.entitiesArray[i].getComponent("Type").entityId;
+            if (entityId == id)
+                return this.entitiesArray[i];
+        }
+        return null;
+    };
+    EntityRoot.prototype.createId = function () {
+        var id = "0";
+        return id;
+    };
     return EntityRoot;
 }());
 var Entity = (function () {
-    function Entity() {
+    function Entity(name, id, index) {
         this.components = new Array();
+        this.init(name, id, index);
     }
+    Entity.prototype.init = function (name, id, index) {
+        // создаем компомнент Type;
+        var component = this.createComponent('Type');
+        component.init(name, id, index);
+        this.addComponent(component);
+    };
     Entity.prototype.createComponent = function (componentName) {
         var component;
-        var id = this.createId;
         if (componentName == "City")
-            component = new City(id, this);
+            component = new City(this);
         else if (componentName == "Name")
-            component = new Name(id, this);
+            component = new Name(this);
         else if (componentName == "Type")
-            component = new Type(id, this);
+            component = new Type(this);
         else if (componentName == "GridPosition")
-            component = new GridPosition(id, this);
+            component = new GridPosition(this);
         else if (componentName == "Move")
-            component = new Move(id, this);
+            component = new Move(this);
         else if (componentName == "Draw")
-            component = new Draw(id, this);
+            component = new Draw(this);
+        else if (componentName == "Type")
+            component = new Type(this);
         else {
-            console.log("Not found component with name" + componentName + "; Error in Entity/createComponent");
+            console.log("Not found component with name: " + componentName + "; Error in Entity/createComponent");
             return null;
         }
         return component;
@@ -778,8 +855,19 @@ var Entity = (function () {
             this.components[index] = component;
         }
     };
-    Entity.prototype.removeComponent = function (component) {
-        console.log("i removed component");
+    Entity.prototype.removeComponent = function (componentName) {
+        var component;
+        var index = -1;
+        for (var i = 0; i < this.components.length; i++) {
+            var curComponent = this.components[i].componentName;
+            if (curComponent == componentName) {
+                component = this.components[i];
+                index = i;
+                break;
+            }
+        }
+        this.components.splice(index, 1);
+        return component;
     };
     Entity.prototype.getComponent = function (componentName) {
         for (var i = 0; i < this.components.length; i++) {
@@ -801,15 +889,10 @@ var Entity = (function () {
             this.components[i].update(dx);
         }
     };
-    Entity.prototype.createId = function () {
-        var id = "0";
-        return id;
-    };
     return Entity;
 }());
 var Component = (function () {
-    function Component(newName, newId, parent) {
-        this.id = newId;
+    function Component(newName, parent) {
         this.componentName = newName;
         this.parent = parent;
     }
@@ -822,8 +905,8 @@ var Component = (function () {
 }());
 var City = (function (_super) {
     __extends(City, _super);
-    function City(id, parent) {
-        var _this = _super.call(this, "City", id, parent) || this;
+    function City(parent) {
+        var _this = _super.call(this, "City", parent) || this;
         _this.roadAmount = 0;
         _this.roadToCities = new Array();
         return _this;
@@ -842,8 +925,8 @@ var City = (function (_super) {
 }(Component));
 var Name = (function (_super) {
     __extends(Name, _super);
-    function Name(id, parent) {
-        return _super.call(this, "Name", id, parent) || this;
+    function Name(parent) {
+        return _super.call(this, "Name", parent) || this;
     }
     Name.prototype.init = function (namesArray, surnamesArray) {
         this.namesArray = namesArray;
@@ -878,8 +961,8 @@ var Name = (function (_super) {
 }(Component));
 var Move = (function (_super) {
     __extends(Move, _super);
-    function Move(id, parent) {
-        return _super.call(this, "Move", id, parent) || this;
+    function Move(parent) {
+        return _super.call(this, "Move", parent) || this;
     }
     Move.prototype.init = function (gridTileSize, tileSize, x, y) {
         this.halfTileSize = tileSize / 2;
@@ -903,8 +986,8 @@ var Move = (function (_super) {
 }(Component));
 var Draw = (function (_super) {
     __extends(Draw, _super);
-    function Draw(id, parent) {
-        return _super.call(this, "Draw", id, parent) || this;
+    function Draw(parent) {
+        return _super.call(this, "Draw", parent) || this;
     }
     Draw.prototype.init = function (tileSize) {
         this.tileSize = tileSize;
@@ -913,8 +996,8 @@ var Draw = (function (_super) {
 }(Component));
 var GridPosition = (function (_super) {
     __extends(GridPosition, _super);
-    function GridPosition(id, parent) {
-        var _this = _super.call(this, "GridPosition", id, parent) || this;
+    function GridPosition(parent) {
+        var _this = _super.call(this, "GridPosition", parent) || this;
         _this.position = new GridCoordinates(0, 0);
         return _this;
     }
@@ -926,12 +1009,13 @@ var GridPosition = (function (_super) {
 }(Component));
 var Type = (function (_super) {
     __extends(Type, _super);
-    function Type(id, parent) {
-        return _super.call(this, "Type", id, parent) || this;
+    function Type(parent) {
+        return _super.call(this, "Type", parent) || this;
     }
-    Type.prototype.init = function (name, entityId) {
+    Type.prototype.init = function (name, entityId, arrayIndex) {
         this.entityName = name;
         this.entityId = entityId;
+        this.arrayIndex = arrayIndex;
     };
     return Type;
 }(Component));

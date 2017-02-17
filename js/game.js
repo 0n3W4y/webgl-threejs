@@ -4,10 +4,13 @@ var tileSizeGraphics = 128; //128 tilesize;
 var mapWidth = 100;
 var mapHeight = 100;
 
-var graphics;
+var dataCityNames = [ firstPartCityName, secondPartCityName, thirdPatrCityName ];
+var dataNpcNames = [ firstPartName, secondPartName, thirdPartNameMale, thirdPartNameFemale ];
+var dataNpsSurnames = [ firstPartSurname, secondPartSurname, thirdPartSurname ];
 
-var ground;
-
+var graphics = new Graphics( tileSizeGraphics );
+var entityRoot = new EntityRoot();
+var ground = new GroundMap( mapWidth, mapHeight );
 
 initLogic();
 createGraphics();
@@ -15,25 +18,13 @@ createGraphics();
 
 function createGraphics(){
 
-	graphics = new Graphics(tileSizeGraphics);
-	graphics.init();
 	graphics.createGraphics( mapWidth, mapHeight, ground.logicGrid );
 }
 
 function initLogic(){
-	var dataNames = [firstPartCityName, secondPartCityName, thirdPatrCityName];
-	var dataNpcNames = 
-	var dataNpsSurnames = 
-	ground = new GroundMap( mapWidth, mapHeight );
-	ground.fillLogicGrid( "Earth" );
-	ground.generateGroundMapObjects( "Forest", 50, 15, 10, 1, 1, 20 );
-	ground.generateGroundMapObjects( "Rocks", 50, 8, 5, 1, 1, 12 );
-	ground.generateGroundMapObjects( "Lake", 2, 8 );
-	ground.generateGroundMapObjects( "Swamp", 6, 2 );
-	ground.generateGroundMapObjects( "Sand", 4, 6 );
-	ground.generateGroundMapObjects( "Lava", 1, 10 );
-	ground.generateRiver( 0, false, 3, 1, 1, 4, 2 );
-	ground.generateCities( null, 16, 2, 8 );
+	var params = { "Forest": [50, 15, 10, 1, 1, 20], "Rocks": [50, 8, 5, 1, 1, 12], "Water": [2, 8], "Swamp": [6, 2], "Sand": [4, 6], "River": ["Water", 0, false, 3, 1, 1, 4, 2], "City": [null, 16, 2, 8] };
+	ground.generateBiomMap( "Earth", params );
+	ground.createCityEntities( entityRoot, [null, dataCityNames]);
 	ground.generateRoadFromCityToCity(1);
 
 }
@@ -41,18 +32,16 @@ function initLogic(){
 function createPlayer(){
 	var player = new Entity( "0", "Player" );
 	var component = player.createComponent( "Name" );
-	var namesArray = [ firstPartName, secondPartName, thirdPartNameMale, thirdPartNameFemale ];
-	var surnamesArray = [ firstPartSurname, secondPartSurname, thirdPartSurname ];
 	component.init( namesArray, surnamesArray );
 	player.addComponent( component );
 }
 
 /*
-for (var i = 0 ; i < gridSizeHeight; i ++){
+for (var i = 0 ; i < mapHeight; i ++){
 	var string = "|";
-	for (var j = 0; j < gridSizeWidth; j++){
-		var id = i*gridSizeHeight + j;
-		var point = gridArray[id];
+	for (var j = 0; j < mapWidth; j++){
+		var id = i*mapHeight + j;
+		var point = ground.logicGrid[id];
 		string += point.coverType + "|";
 	}
 

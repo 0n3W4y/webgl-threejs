@@ -172,14 +172,14 @@ function onEnterFrame()
 }
 
 function render(){
-	moveScene();
+	moveCamera();
 	//smoothlyRotateCamera();
 	graphics.renderer.render(graphics.scene, graphics.camera);
 }
 
-function moveScene(){
-	graphics.camera.position.x = -(targetMoveX * 0.75) / graphics.camera.zoom;
-	graphics.camera.position.z = -(targetMoveY * 0.75) / graphics.camera.zoom;
+function moveCamera(){
+	graphics.camera.position.x = -(targetMoveX * 0.85) / graphics.camera.zoom;
+	graphics.camera.position.z = -(targetMoveY * 0.85) / graphics.camera.zoom;
 	graphics.camera.lookAt(new THREE.Vector3(graphics.camera.position.x - 200, graphics.camera.position.y - 100, graphics.camera.position.z - 200));
 }
 /*

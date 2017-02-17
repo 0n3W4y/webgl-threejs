@@ -40,20 +40,38 @@ class GroundMap{
 	public height:number;
 	public size:number;
 	public logicGrid:Array<any>;
-	public citiesArray:Array<any>;
 
-	private dataCityNames:Array<any>;
+	private cityCoordinatesArray:Array<any>;
 
-	constructor(width, height, dataNames){
+	constructor( width, height ){
 		this.width = width;
 		this.height = height;
 		this.size = width*height;
 		this.logicGrid = new Array();
-		this.citiesArray = new Array();
-		this.dataCityNames = dataNames;
+		this.cityCoordinatesArray = new Array();
 	}
 
-	public fillLogicGrid(type):void{
+	public generateBiomMap( primaryGroundBiom, params ):void{ //{ "Earth" : [amount, width, height, offset, step, maxWidth]...}
+
+		// генерируем все параметры в определенном порядке
+		var obj = { "Earth": [], "Sand": [], "Forest": [], "Water": [], "Lava": [], "Swamp": [], "Rocks": [], "River": [], "City": [] };
+
+		this.fillLogicGrid( primaryGroundBiom );
+
+		for( var key in params ){
+			if( !( obj[key] === undefined ) )
+				obj[key] = params[key];				
+		}
+
+		for( var prop in obj ){
+			var params = obj[prop];
+			if( params.length > 0 )
+				this.generateGroundMapObjects( prop, params );
+		}
+
+	}
+
+	private fillLogicGrid(type):void{
 		var coverType;
 		var pointType;
 		var movementRatio;
@@ -62,11 +80,22 @@ class GroundMap{
 			coverType = 4;
 			pointType = 1;
 			movementRatio = 0.8;
-		}else if( type == "Sand" ){
+		}
+		else if( type == "Sand" ){
 			coverType = 5;
 			pointType = 1;
 			movementRatio = 0.6;
-		}else{
+		}
+		else if( type == "Water" ){
+
+		}
+		else if( type == "Lava" ){
+
+		}
+		else if( type == "Oil" ){
+
+		}
+		else{
 			//default earth
 			coverType = 4;
 			pointType = 1;
@@ -83,12 +112,13 @@ class GroundMap{
 		}
 	}
 
-	public generateCities( entityRootSystem, type, amount, safeZoneNum, minRad):void{
-		var entityRoot = entityRootSystem;
-		var cityAmount = amount || Math.min(Math.round(this.width/5), Math.round(this.height/5)); // default;
-		var safeZone = safeZoneNum || 2; //default;
-		var minRadius = minRad || Math.round((this.width+this.height)/(2*amount)); //default
+	public generateCities( args ):void{
+		var cityType = args[0];
+		var cityAmount = args[1] || Math.min(Math.round(this.width/5), Math.round(this.height/5)); // default;
+		var safeZone = args[2] || 2; //default;
+		var minRadius = args[3] || Math.round((this.width+this.height)/(2*cityAmount)); //default
 		var temporaryArrayForCheckCoords = new Array();
+
 		for (var i = 0; i < cityAmount; i++){
 			var pointX = Math.floor(Math.random()*(this.width - safeZone*2) + safeZone);
 			var pointY = Math.floor(Math.random()*(this.height - safeZone*2) + safeZone);
@@ -108,37 +138,52 @@ class GroundMap{
 			}
 
 			if (check){
-				var newCoords = new GridCoordinates(pointX, pointY);
-				temporaryArrayForCheckCoords.push(newCoords);
+				var newCoords = new GridCoordinates( pointX, pointY );
+				temporaryArrayForCheckCoords.push( newCoords );
 				var gridId = pointY*this.height + pointX;
 				this.logicGrid[gridId].coverType = 9;
 				this.logicGrid[gridId].pointType = 2;
 				this.logicGrid[gridId].movementRatio = 1;
-				var newCity = entityRoot.createEntity("City");
-				//
-				var component = newCity.createComponent("City");
-				var cityName = this.generateCityName();
-				component.name = cityName;
-				component.gridCoordinates = newCoords;
-				component.gridId = gridId;
-				newCity.addComponent(component);
-				this.citiesArray.push(newCity);
 			}else{
 				i--;
 			}
 
 		}
+
+		this.cityCoordinatesArray = temporaryArrayForCheckCoords;
 	}
 
 	//angular -  будет ли река поворачивать на 90 градусов ( true; false); type - 0 - simple river, 1 - river with lake, 2 - river with solid;
-	public generateRiver(type, angular, width, offset, step, maxWidth, minWidth){
-		var liquidWidth = width || Math.round(this.width*0.05); //max 5%;
-		var liquidAngulatChanse = angular || false; // no chanse on default;
-		var liquidType = type || 0; //simple river default;
-		var liquidOffset = offset || 1; //max 1;
-		var liquidStep = step || 1; //max 1;
-		var liquidMaxWidth = maxWidth || (liquidWidth + 5) // max +5;
-		var liquidMinWidth = minWidth || 0;// 0 - river can be underground;
+	private generateRiver( args ){ //  type, angular, width, offset, step, maxWidth, minWidth
+
+		var type = args[0];
+		var liquidType = args[1] || 0; //simple river default;
+		var liquidAngulatChanse = args[2] || false; // no chanse on default;
+		var liquidWidth = args[3] || Math.round(this.width*0.05); //max 5%;
+		var liquidOffset = args[4] || 1; //max 1;
+		var liquidStep = args[5] || 1; //max 1;
+		var liquidMaxWidth = args[6] || (liquidWidth + 5) // max +5;
+		var liquidMinWidth = args[7] || 2;// 0 - river can be underground;
+
+		var pointType;
+		var coverType;
+		var movementRatio;
+
+		if( type == "Water" ){
+			coverType = 1;
+			movementRatio = 0.4;
+			pointType = 0;
+		}
+		else if( type == "Lava" ){
+			coverType = 2;
+			movementRatio = 0;
+			pointType = 0;
+		}
+		else if( type == "Oil" ){
+			coverType = 0;
+			movementRatio = 0.2;
+			pointType = 0;
+		}
 
 		var startingPointY = Math.floor(Math.random()*(this.height/2 + 1)); // max start on half of grid on Y;
 		var startingPointX = Math.floor(Math.random()*(this.width - liquidWidth + 1));
@@ -177,9 +222,9 @@ class GroundMap{
 				//проверяем, принадлежит ли наш индекс строке Y, на которой мы хотим разместить часть объекта;
 				if (gridIndex >= (startingPointY + j) * this.height && gridIndex < (startingPointY + j + 1) * this.height){
 					var point = this.logicGrid[gridIndex];
-					point.pointType = 0; // water
-					point.movementRatio = 0.4;
-					point.coverType = 1 // water;
+					point.pointType = pointType; // water
+					point.movementRatio = movementRatio;
+					point.coverType = coverType // water;
 
 				}
 			}
@@ -188,12 +233,20 @@ class GroundMap{
 
 	// generating with WIDTH, so height is static; 
 	//offset - есть ли смещение влево или вправо и на сколько, step - на сколько сильно может уменьшаться или увеличиваться объект с каждой последующей Y  координатой;
-	public generateGroundMapObjects(type, amount, width, height, offset, step, maxWidth){
+	private generateGroundMapObjects(type, args){ //amount, width, height, offset, step, maxWidth
+		if( type == "River" ){
+			this.generateRiver( args );
+			return;
+		}
+		else if( type == "City" ){
+			this.generateCities( args );
+			return;
+		}
 
 		var pointType;
 		var movementRatio;
 		var coverType;
-		if (type == "Lake"){
+		if (type == "Water"){
 			pointType = 0;
 			movementRatio = 0.4;
 			coverType = 1;
@@ -227,12 +280,12 @@ class GroundMap{
 			coverType = 0;
 		}
 
-		var liquidAmount = amount || 1; // max 1
-		var liquidWidth = width || Math.round(this.width/10) // max 10%
-		var liquidHeight = height || Math.round(this.height/10) // max 10%
-		var liquidOffset = offset || 1; //max 1;
-		var liquidStep = step || 1; //max 1;
-		var liquidMaxWidth = maxWidth || (liquidWidth + 5); // max +5;
+		var liquidAmount = args[0] || 1; // max 1
+		var liquidWidth = args[1] || Math.round(this.width/10) // max 10%
+		var liquidHeight = args[2] || Math.round(this.height/10) // max 10%
+		var liquidOffset = args[3] || 1; //max 1;
+		var liquidStep = args[4] || 1; //max 1;
+		var liquidMaxWidth = args[5] || (liquidWidth + 5); // max +5;
 		var liquidMinWidth = 1; //default;
 
 		for (var i = 0; i < liquidAmount; i++)
@@ -274,17 +327,17 @@ class GroundMap{
 	}
 
 	//amount - количество дорог идущих от 1 города ( максимум );
-	public generateRoadFromCityToCity(amount){
+	public generateRoadFromCityToCity( amount ){
 		var roadAmount = amount || 2; //2 max;
 
 		for ( var i = 0; i < this.logicGrid.length; i++){
 			var point = this.logicGrid[i];
 			var distanceArray = null;
-			if ( point.coverType == 9){ //city 
-				for (var j = 0; j < this.citiesArray.length; j++){
-					var city = this.citiesArray[j];
-					if ( city.getComponent('City').gridId == i){
-						distanceArray = this.calculateDistanceFromCity(city);
+			if ( point.coverType == 9 ){ //city 
+				for (var j = 0; j < this.cityCoordinatesArray.length; j++){
+					var city = this.cityCoordinatesArray[j];
+					if ( city.getComponent('GridPosition').gridId == i){
+						distanceArray = this.calculateDistanceFromCity( city );
 						break;
 					}
 
@@ -387,49 +440,66 @@ class GroundMap{
 
 	}
 
-	private calculateDistanceFromCity(city):Array<any>{ //return Array of numbers;
+	private calculateDistanceFromCity( city ):Array<any>{ //return Array of numbers;
 		var dsArray = new Array();
 		var temporary = new Array();
 		var result = new Array();
 
-		var pointX = city.getComponent("City").gridCoordinates.x;
-		var pointY = city.getComponent("City").gridCoordinates.y;
+		var pointX = city.getComponent( "GridPosition" ).position.x;
+		var pointY = city.getComponent( "GridPosition" ).position.y;
 
 		//собираем информацию о дистанции до города со всех городов.
-		for (var i = 0 ; i < this.citiesArray.length; i++){
-			var newCity = this.citiesArray[i];
-			var newCityName = newCity.getComponent('City').name;
-			var newPointX = newCity.getComponent("City").gridCoordinates.x;
-			var newPointY = newCity.getComponent("City").gridCoordinates.y;
+		for (var i = 0 ; i < this.cityCoordinatesArray.length; i++){
+			var newCity = this.cityCoordinatesArray[i];
+			var newCityName = newCity.getComponent( 'Name' ).surname;
+			//
+			var newPointX = newCity.getComponent( "GridPosition" ).position.x;
+			var newPointY = newCity.getComponent( "GridPosition" ).position.y;
 
 			var difX = Math.abs(pointX - newPointX);
 			var difY = Math.abs(pointX - newPointX);
 			var dif = Math.round(Math.sqrt(difX*difX + difY*difY));
 
-			dsArray.push(dif); // пушим дистанцию
+			dsArray.push( dif ); // пушим дистанцию
 		}
 
 		temporary = dsArray.slice(); // copy;
 
-		temporary.sort(function(a,b){ return a-b;}); // сортируем.
+		temporary.sort(function(a,b){ return a-b; }); // сортируем.
 
 		//делаем отправной массив с ссылками на города. но в порядке от самых ближайших городов до самых дальних.
 		for (var j = 0; j <dsArray.length; j++){
 			var searchNum = temporary[j];
 			var index = dsArray.indexOf(searchNum);
-			result.push(this.citiesArray[index]);
+			result.push(this.cityCoordinatesArray[index]);
 		}
 
 		return result;
 
 	}
-	private generateCityName():string{ //return string
-		var fname = Math.floor(Math.random()*this.dataCityNames[0].length);
-		var sname = Math.floor(Math.random()*this.dataCityNames[1].length);
-		var tname = Math.floor(Math.random()*this.dataCityNames[2].length);
 
-		var name = this.dataCityNames[0][fname] + this.dataCityNames[1][sname] + this.dataCityNames[2][tname];
-		return name;
+	public createCityEntities( entityRoot, namesArray ){
+
+		for( var i = 0; i < this.cityCoordinatesArray.length; i++ ){
+			var coordinates = this.cityCoordinatesArray[i];
+			var newCity = entityRoot.createEntity( "City" );
+			var component = newCity.createComponent( "City" );
+			newCity.addComponent( component );
+
+			component = newCity.createComponent( "Name" );
+			component.init( namesArray[0], namesArray[1] );
+			component.generateSurname();
+			newCity.addComponent( component );
+
+			component = newCity.createComponent( "GridPosition" );
+			component.changePosition( coordinates.x, coordinates.y );
+			component.gridId = this.height*coordinates.y + coordinates.x;
+			newCity.addComponent( component );
+			//заменяем внутри массива значение с простыми координатами на ссылку, полученную в результате создания Entity. Это необходмо для работы функции прокладки дороги.
+			this.cityCoordinatesArray[i] = newCity;
+		}
+
+		
 	}
 
 
@@ -454,9 +524,10 @@ class Graphics {
 
 	constructor(tileSize){
 		this.tileSize = tileSize;
+		this.init();
 	}
 
-	public init():void{
+	private init():void{
 		//primary DOM element;
 		this.container = document.getElementById( 'canvas' );
 
@@ -636,7 +707,7 @@ class Graphics {
 		var textureLoader = new THREE.TextureLoader();
 		var tex = textureLoader.load( newTexture );
 
-		var solidMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff , map:tex, shininess: 0, side: THREE.DoubleSide } );
+		var solidMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff , map:tex, shininess: 0 } );
 		var liquidMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff , map:tex, shininess: 25 } );
 
 		var sand = [new THREE.Vector2(.01, .76), new THREE.Vector2(.24, .76), new THREE.Vector2(.24, .99), new THREE.Vector2(.01, .99)];
@@ -855,20 +926,26 @@ class EntityRoot{
 		this.entitiesArray = new Array();
 	}
 
-	public createEntity( type , params ):any{
+	public createEntity( type ):any{
 		var entity;
 		var name;
-		var id;
+		var id = this.createId();
 
 		if( type == "Player" ){
 			name = "Player";
-			id = "0";
+		}
+		else if( type == "City" ){
+			name = "City";
+		}
+		else if( type == "Mob" ){
+			name = 'Mob';
+		}
+		else if( type == "NPC" ){
+			name = "NPC";
 		}
 
-		entity = new Entity();
-		var component = entity.createComponent( "Type" );
-		component.init( name, id );
-		entity.addComponent( component );
+		var index = this.entitiesArray.length;
+		entity = new Entity( name, id, index );
 		this.entitiesArray.push( entity );
 
 		return entity;
@@ -879,7 +956,7 @@ class EntityRoot{
 		var result = null;
 		for( var i = 0; i < this.entitiesArray.length; i++ ){
 			var entity = this.entitiesArray[i];
-			if( entity.id == id ){
+			if( entity.getComponent( 'Type' ).entityId == id ){
 				result = entity;
 				index = i;
 				break;
@@ -891,6 +968,20 @@ class EntityRoot{
 		return result;
 	}
 
+	public getEntityById( id ):any{
+		for( var i = 0; i < this.entitiesArray.length; i++ ){
+			var entityId = this.entitiesArray[i].getComponent( "Type" ).entityId;
+			if ( entityId == id )
+				return this.entitiesArray[i];
+		}
+
+		return null;
+	}
+
+	private createId(){
+		var id = "0";
+		return id;
+	}
 
 }
 
@@ -899,27 +990,36 @@ class Entity {
 
 	private components:Array<any>;
 
-	constructor (){
+	constructor( name, id, index ){
 		this.components = new Array();
+		this.init( name, id, index );
+	}
+
+	private init( name, id, index ){
+		// создаем компомнент Type;
+		var component = this.createComponent( 'Type' );
+		component.init( name, id, index );
+		this.addComponent( component );
 	}
 
 	public createComponent( componentName ):any{
 		var component;
-		var id = this.createId;
 		if( componentName == "City" )
-			component = new City( id, this );
+			component = new City( this );
 		else if( componentName == "Name" )
-			component = new Name( id, this );
+			component = new Name( this );
 		else if( componentName == "Type")
-			component = new Type( id, this );
+			component = new Type( this );
 		else if( componentName == "GridPosition" )
-			component = new GridPosition( id, this );
+			component = new GridPosition( this );
 		else if( componentName == "Move" )
-			component = new Move( id, this );
+			component = new Move( this );
 		else if( componentName == "Draw" )
-			component = new Draw( id, this );
+			component = new Draw( this );
+		else if( componentName == "Type" )
+			component = new Type( this );
 		else{
-			console.log( "Not found component with name" + componentName + "; Error in Entity/createComponent");
+			console.log( "Not found component with name: " + componentName + "; Error in Entity/createComponent");
 			return null;
 		}
 		return component;
@@ -935,8 +1035,20 @@ class Entity {
 		}
 	}
 
-	public removeComponent(component):void{
-		console.log("i removed component");
+	public removeComponent( componentName ):any{
+		var component;
+		var index = -1;
+		for( var i = 0; i < this.components.length; i++ ){
+			var curComponent = this.components[i].componentName;
+			if( curComponent == componentName ){
+				component = this.components[i];
+				index = i;
+				break;
+			}
+		}
+
+		this.components.splice( index, 1 );
+		return component;
 	}
 
 	public getComponent(componentName):any{
@@ -962,23 +1074,14 @@ class Entity {
 			this.components[i].update(dx);
 		}
 	}
-
-	private createId(){
-		var id = "0";
-		return id;
-	}
-
-
 }
 
 class Component {
-	public id:string;
 	public componentName:string;
 
 	protected parent:any;
 
-	constructor( newName, newId, parent ){
-		this.id = newId;
+	constructor( newName, parent ){
 		this.componentName = newName;
 		this.parent = parent;
 	}
@@ -996,11 +1099,9 @@ class City extends Component {
 
 	public roadAmount:number;
 	public roadToCities:Array<string>; // контейнер для генератора, что бы понять, что город соединен с другим городом и дополнительная дорога не нужна;
-	public gridCoordinates:any;
-	public gridId:number;
 
-	constructor( id, parent ){
-		super("City", id, parent);
+	constructor( parent ){
+		super("City", parent);
 		this.roadAmount = 0;
 		this.roadToCities = new Array();
 	}
@@ -1026,8 +1127,8 @@ class Name extends Component{
 	private namesArray:Array<any>;
 	private surnamesArray:Array<any>;
 
-	constructor( id, parent ){
-		super("Name", id, parent );
+	constructor( parent ){
+		super("Name", parent );
 	}
 
 	public init( namesArray, surnamesArray ){
@@ -1077,8 +1178,8 @@ class Move extends Component{
 	private halfTileSize:number;
 	private gridTileSize:number;
 
-	constructor( id, parent ){
-		super( "Move", id, parent );
+	constructor( parent ){
+		super( "Move", parent );
 	}
 
 	public init( gridTileSize, tileSize, x, y ):void{
@@ -1111,8 +1212,8 @@ class Draw extends Component{
 	public graphicIndex:number;
 	public tileSize:number;
 
-	constructor( id, parent ){
-		super( "Draw", id, parent );
+	constructor( parent ){
+		super( "Draw", parent );
 	}
 
 	public init( tileSize ):void{
@@ -1123,14 +1224,15 @@ class Draw extends Component{
 class GridPosition extends Component{
 
 	public position:any;
+	public gridId:number;
 
-	constructor( id, parent ){
-		super( "GridPosition", id, parent);
+	constructor( parent ){
+		super( "GridPosition", parent );
 		this.position = new GridCoordinates( 0, 0 );
 	}
 
 	public changePosition( x, y ){
-		this. position.x = x;
+		this.position.x = x;
 		this.position.y = y;
 	}
 }
@@ -1139,13 +1241,15 @@ class Type extends Component{
 
 	public entityName:string;
 	public entityId:string;
+	public arrayIndex:number;
 
-	constructor( id, parent ){
-		super( "Type", id, parent );		
+	constructor( parent ){
+		super( "Type", parent );		
 	}
 
-	public init( name, entityId ){
+	public init( name, entityId, arrayIndex ){
 		this.entityName = name;
 		this.entityId = entityId;
+		this.arrayIndex = arrayIndex;
 	}
 }
