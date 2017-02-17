@@ -1,3 +1,1 @@
-
-%APPDATA%\npm\tsc "C:\projects\webgl-threejs\js\framework\classes.ts"
-pause
+%APPDATA%\npm\tsc --out classes.js "C:\projects\webgl-threejs\js\framework\source_ts\Components.ts" "C:\projects\webgl-threejs\js\framework\source_ts\Entity.ts" "C:\projects\webgl-threejs\js\framework\source_ts\EntityRoot.ts" "C:\projects\webgl-threejs\js\framework\source_ts\Graphics.ts" "C:\projects\webgl-threejs\js\framework\source_ts\GridCoordinates.ts" "C:\projects\webgl-threejs\js\framework\source_ts\GridPoint.ts" "C:\projects\webgl-threejs\js\framework\source_ts\GroundMap.ts"

@@ -1,411 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var GridPoint = (function () {
-    function GridPoint(id, point, cover, effect, speed, newIndex, coords) {
-        this.gridId = id;
-        this.pointType = point;
-        this.coverType = cover;
-        this.effectType = effect;
-        this.movementRatio = speed;
-        this.graphicIndex = newIndex;
-        this.gridCoords = coords;
-    }
-    return GridPoint;
-}());
-var GridCoordinates = (function () {
-    function GridCoordinates(newX, newY) {
-        this.x = newX;
-        this.y = newY;
-    }
-    return GridCoordinates;
-}());
-var GroundMap = (function () {
-    function GroundMap(width, height) {
-        this.width = width;
-        this.height = height;
-        this.size = width * height;
-        this.logicGrid = new Array();
-        this.cityCoordinatesArray = new Array();
-    }
-    GroundMap.prototype.generateBiomMap = function (primaryGroundBiom, params) {
-        // генерируем все параметры в определенном порядке
-        var obj = { "Earth": [], "Sand": [], "Forest": [], "Water": [], "Lava": [], "Swamp": [], "Rocks": [], "River": [], "City": [] };
-        this.fillLogicGrid(primaryGroundBiom);
-        for (var key in params) {
-            if (!(obj[key] === undefined))
-                obj[key] = params[key];
-        }
-        for (var prop in obj) {
-            var params = obj[prop];
-            if (params.length > 0)
-                this.generateGroundMapObjects(prop, params);
-        }
-    };
-    GroundMap.prototype.fillLogicGrid = function (type) {
-        var coverType;
-        var pointType;
-        var movementRatio;
-        if (type == "Earth") {
-            coverType = 4;
-            pointType = 1;
-            movementRatio = 0.8;
-        }
-        else if (type == "Sand") {
-            coverType = 5;
-            pointType = 1;
-            movementRatio = 0.6;
-        }
-        else if (type == "Water") {
-        }
-        else if (type == "Lava") {
-        }
-        else if (type == "Oil") {
-        }
-        else {
-            //default earth
-            coverType = 4;
-            pointType = 1;
-            movementRatio = 0.8;
-        }
-        for (var y = 0; y < this.height; y++) {
-            for (var x = 0; x < this.width; x++) {
-                var gridId = y * this.height + x;
-                var coords = new GridCoordinates(x, y);
-                var newGridPoint = new GridPoint(gridId, pointType, coverType, 0, movementRatio, 0, coords); //earth;
-                this.logicGrid.push(newGridPoint);
-            }
-        }
-    };
-    GroundMap.prototype.generateCities = function (args) {
-        var cityType = args[0];
-        var cityAmount = args[1] || Math.min(Math.round(this.width / 5), Math.round(this.height / 5)); // default;
-        var safeZone = args[2] || 2; //default;
-        var minRadius = args[3] || Math.round((this.width + this.height) / (2 * cityAmount)); //default
-        var temporaryArrayForCheckCoords = new Array();
-        for (var i = 0; i < cityAmount; i++) {
-            var pointX = Math.floor(Math.random() * (this.width - safeZone * 2) + safeZone);
-            var pointY = Math.floor(Math.random() * (this.height - safeZone * 2) + safeZone);
-            var check = true;
-            //проверяем, есть ли по близости город, в пределах минимального радиуса.
-            for (var j = 0; j < temporaryArrayForCheckCoords.length; j++) {
-                var cityX = temporaryArrayForCheckCoords[j].x;
-                var cityY = temporaryArrayForCheckCoords[j].y;
-                var difX = Math.abs(cityX - pointX);
-                var difY = Math.abs(cityY - pointY);
-                var coordDif = Math.round(Math.sqrt(difX * difX + difY * difY));
-                if (coordDif <= minRadius)
-                    check = false;
-            }
-            if (check) {
-                var newCoords = new GridCoordinates(pointX, pointY);
-                temporaryArrayForCheckCoords.push(newCoords);
-                var gridId = pointY * this.height + pointX;
-                this.logicGrid[gridId].coverType = 9;
-                this.logicGrid[gridId].pointType = 2;
-                this.logicGrid[gridId].movementRatio = 1;
-            }
-            else {
-                i--;
-            }
-        }
-        this.cityCoordinatesArray = temporaryArrayForCheckCoords;
-    };
-    //angular -  будет ли река поворачивать на 90 градусов ( true; false); type - 0 - simple river, 1 - river with lake, 2 - river with solid;
-    GroundMap.prototype.generateRiver = function (args) {
-        var type = args[0];
-        var liquidType = args[1] || 0; //simple river default;
-        var liquidAngulatChanse = args[2] || false; // no chanse on default;
-        var liquidWidth = args[3] || Math.round(this.width * 0.05); //max 5%;
-        var liquidOffset = args[4] || 1; //max 1;
-        var liquidStep = args[5] || 1; //max 1;
-        var liquidMaxWidth = args[6] || (liquidWidth + 5); // max +5;
-        var liquidMinWidth = args[7] || 2; // 0 - river can be underground;
-        var pointType;
-        var coverType;
-        var movementRatio;
-        if (type == "Water") {
-            coverType = 1;
-            movementRatio = 0.4;
-            pointType = 0;
-        }
-        else if (type == "Lava") {
-            coverType = 2;
-            movementRatio = 0;
-            pointType = 0;
-        }
-        else if (type == "Oil") {
-            coverType = 0;
-            movementRatio = 0.2;
-            pointType = 0;
-        }
-        var startingPointY = Math.floor(Math.random() * (this.height / 2 + 1)); // max start on half of grid on Y;
-        var startingPointX = Math.floor(Math.random() * (this.width - liquidWidth + 1));
-        var liquidHeight;
-        if (liquidType == 0) {
-            startingPointY = 0;
-            liquidHeight = this.height;
-        }
-        var liquidCurrentWidth = liquidWidth;
-        var nextPointX = startingPointX;
-        // no angular, no lakes and solids, right now only simple RiverL
-        for (var j = 0; j < liquidHeight; j++) {
-            if (j != 0) {
-                var liquidCurrentStep = Math.floor(Math.random() * (liquidStep * 2 + 1) - liquidStep);
-                var liquidDirectionOffset = Math.floor(Math.random() * (liquidOffset * 2 + 1) - liquidOffset); // -1 left, 0 - center, +1 - right;
-                liquidCurrentWidth = liquidCurrentWidth + liquidCurrentStep;
-                nextPointX += liquidDirectionOffset;
-                if (liquidCurrentWidth > liquidMaxWidth)
-                    liquidCurrentWidth = liquidMaxWidth;
-                else if (liquidCurrentWidth < liquidMinWidth)
-                    liquidCurrentWidth = liquidMinWidth;
-                else if (liquidCurrentWidth == 1)
-                    nextPointX -= liquidDirectionOffset;
-            }
-            for (var k = 0; k < liquidCurrentWidth; k++) {
-                var gridIndex = (startingPointY + j) * this.height + (nextPointX + k);
-                //проверяем, принадлежит ли наш индекс строке Y, на которой мы хотим разместить часть объекта;
-                if (gridIndex >= (startingPointY + j) * this.height && gridIndex < (startingPointY + j + 1) * this.height) {
-                    var point = this.logicGrid[gridIndex];
-                    point.pointType = pointType; // water
-                    point.movementRatio = movementRatio;
-                    point.coverType = coverType; // water;
-                }
-            }
-        }
-    };
-    // generating with WIDTH, so height is static; 
-    //offset - есть ли смещение влево или вправо и на сколько, step - на сколько сильно может уменьшаться или увеличиваться объект с каждой последующей Y  координатой;
-    GroundMap.prototype.generateGroundMapObjects = function (type, args) {
-        if (type == "River") {
-            this.generateRiver(args);
-            return;
-        }
-        else if (type == "City") {
-            this.generateCities(args);
-            return;
-        }
-        var pointType;
-        var movementRatio;
-        var coverType;
-        if (type == "Water") {
-            pointType = 0;
-            movementRatio = 0.4;
-            coverType = 1;
-        }
-        else if (type == "Rocks") {
-            pointType = 2;
-            movementRatio = 0.2;
-            coverType = 8;
-        }
-        else if (type == "Forest") {
-            pointType = 2;
-            movementRatio = 0.7;
-            coverType = 7;
-        }
-        else if (type == "Swamp") {
-            pointType = 1;
-            movementRatio = 0.5;
-            coverType = 3;
-        }
-        else if (type == "Earth") {
-            pointType = 1;
-            movementRatio = 0.8;
-            coverType = 4;
-        }
-        else if (type == "Sand") {
-            pointType = 1;
-            movementRatio = 0.5;
-            coverType = 5;
-        }
-        else if (type == "Lava") {
-            pointType = 0;
-            movementRatio = 0;
-            coverType = 2;
-        }
-        else if (type == "Oil") {
-            pointType = 0;
-            movementRatio = 0;
-            coverType = 0;
-        }
-        var liquidAmount = args[0] || 1; // max 1
-        var liquidWidth = args[1] || Math.round(this.width / 10); // max 10%
-        var liquidHeight = args[2] || Math.round(this.height / 10); // max 10%
-        var liquidOffset = args[3] || 1; //max 1;
-        var liquidStep = args[4] || 1; //max 1;
-        var liquidMaxWidth = args[5] || (liquidWidth + 5); // max +5;
-        var liquidMinWidth = 1; //default;
-        for (var i = 0; i < liquidAmount; i++) {
-            // для того, что бы вписать объект, что бы он не выходил за границы, сделаю стартовые точки с учетом длинны и ширины объекта.
-            var startingPointY = Math.floor(Math.random() * (this.height - liquidHeight + 1));
-            var startingPointX = Math.floor(Math.random() * (this.width - liquidWidth + 1));
-            var liquidCurrentWidth = liquidWidth;
-            var nextPointX = startingPointX;
-            for (var j = 0; j < liquidHeight; j++) {
-                if (j != 0) {
-                    var liquidCurrentStep = Math.floor(Math.random() * (liquidStep * 2 + 1) - liquidStep);
-                    var liquidDirectionOffset = Math.floor(Math.random() * (liquidOffset * 2 + 1) - liquidOffset); // -1 left, 0 - center, +1 - right;
-                    liquidCurrentWidth = liquidCurrentWidth + liquidCurrentStep;
-                    nextPointX = nextPointX + liquidDirectionOffset;
-                    if (liquidCurrentWidth > liquidMaxWidth)
-                        liquidCurrentWidth = liquidMaxWidth;
-                    else if (liquidCurrentWidth == 1)
-                        nextPointX -= liquidDirectionOffset;
-                }
-                for (var k = 0; k < liquidCurrentWidth; k++) {
-                    var gridIndex = (startingPointY + j) * this.height + (nextPointX + k);
-                    //проверяем, принадлежит ли наш индекс строке Y, на которой мы хотим разместить часть объекта;
-                    if (gridIndex >= (startingPointY + j) * this.height && gridIndex < (startingPointY + j + 1) * this.height) {
-                        var point = this.logicGrid[gridIndex];
-                        point.pointType = pointType;
-                        point.movementRatio = movementRatio;
-                        point.coverType = coverType;
-                    }
-                }
-            }
-        }
-    };
-    //amount - количество дорог идущих от 1 города ( максимум );
-    GroundMap.prototype.generateRoadFromCityToCity = function (amount) {
-        var roadAmount = amount || 2; //2 max;
-        for (var i = 0; i < this.logicGrid.length; i++) {
-            var point = this.logicGrid[i];
-            var distanceArray = null;
-            if (point.coverType == 9) {
-                for (var j = 0; j < this.cityCoordinatesArray.length; j++) {
-                    var city = this.cityCoordinatesArray[j];
-                    if (city.getComponent('GridPosition').gridId == i) {
-                        distanceArray = this.calculateDistanceFromCity(city);
-                        break;
-                    }
-                }
-            }
-            if (distanceArray != null) {
-                for (var j = 0; j < roadAmount; j++) {
-                    this.createRoadFromCityToCity(city, distanceArray);
-                }
-            }
-        }
-    };
-    GroundMap.prototype.createRoadFromCityToCity = function (city, citiesArray) {
-        var newCity = null;
-        var currentCity = city.getComponent('City');
-        for (var k = 0; k < citiesArray.length; k++) {
-            var tempCity = citiesArray[k].getComponent('City');
-            if (tempCity.name != currentCity.name && !tempCity.checkRoadToCity(currentCity.name)) {
-                newCity = tempCity;
-                if (k > 1) {
-                    var previousCity = citiesArray[k - 1].getComponent('City');
-                    if (!newCity.checkRoadToCity(previousCity.name))
-                        break;
-                }
-            }
-        }
-        if (newCity == null)
-            return;
-        var pointX = currentCity.gridCoordinates.x;
-        var pointY = currentCity.gridCoordinates.y;
-        var toPointX = newCity.gridCoordinates.x;
-        var toPointY = newCity.gridCoordinates.y;
-        var nextPointX = pointX;
-        var nextPointY = pointY;
-        while (true) {
-            var difX = nextPointX - toPointX;
-            var difY = nextPointY - toPointY;
-            var directionX = 0;
-            var directionY = 0;
-            if (difX < 0)
-                directionX = 1;
-            else if (difX > 0)
-                directionX = -1;
-            if (difY < 0)
-                directionY = 1;
-            else if (difY > 0)
-                directionY = -1;
-            if (Math.abs(difX) > Math.abs(difY)) {
-                if (difX != 0) {
-                    nextPointX += directionX;
-                    var gridIndex = nextPointY * this.height + nextPointX;
-                    var point = this.logicGrid[gridIndex];
-                    if (point.coverType != 9) {
-                        point.pointType = 1; // flat tile;
-                        point.coverType = 6; // road
-                        point.movementRatio = 1; // normal
-                    }
-                }
-            }
-            else {
-                if (difY != 0) {
-                    nextPointY += directionY;
-                    var gridIndex = nextPointY * this.height + nextPointX;
-                    var point = this.logicGrid[gridIndex];
-                    if (point.coverType != 9) {
-                        point.pointType = 1; // flat tile;
-                        point.coverType = 6; // road
-                        point.movementRatio = 1; // normal
-                    }
-                }
-            }
-            //exit from endless loop;
-            if (difX == 0 && difY == 0) {
-                currentCity.roadAmount++;
-                currentCity.addRoadToCity(newCity.name);
-                newCity.roadAmount++;
-                newCity.addRoadToCity(currentCity.name);
-                break;
-            }
-        }
-    };
-    GroundMap.prototype.calculateDistanceFromCity = function (city) {
-        var dsArray = new Array();
-        var temporary = new Array();
-        var result = new Array();
-        var pointX = city.getComponent("GridPosition").position.x;
-        var pointY = city.getComponent("GridPosition").position.y;
-        //собираем информацию о дистанции до города со всех городов.
-        for (var i = 0; i < this.cityCoordinatesArray.length; i++) {
-            var newCity = this.cityCoordinatesArray[i];
-            var newCityName = newCity.getComponent('Name').surname;
-            //
-            var newPointX = newCity.getComponent("GridPosition").position.x;
-            var newPointY = newCity.getComponent("GridPosition").position.y;
-            var difX = Math.abs(pointX - newPointX);
-            var difY = Math.abs(pointX - newPointX);
-            var dif = Math.round(Math.sqrt(difX * difX + difY * difY));
-            dsArray.push(dif); // пушим дистанцию
-        }
-        temporary = dsArray.slice(); // copy;
-        temporary.sort(function (a, b) { return a - b; }); // сортируем.
-        //делаем отправной массив с ссылками на города. но в порядке от самых ближайших городов до самых дальних.
-        for (var j = 0; j < dsArray.length; j++) {
-            var searchNum = temporary[j];
-            var index = dsArray.indexOf(searchNum);
-            result.push(this.cityCoordinatesArray[index]);
-        }
-        return result;
-    };
-    GroundMap.prototype.createCityEntities = function (entityRoot, namesArray) {
-        for (var i = 0; i < this.cityCoordinatesArray.length; i++) {
-            var coordinates = this.cityCoordinatesArray[i];
-            var newCity = entityRoot.createEntity("City");
-            var component = newCity.createComponent("City");
-            newCity.addComponent(component);
-            component = newCity.createComponent("Name");
-            component.init(namesArray[0], namesArray[1]);
-            component.generateSurname();
-            newCity.addComponent(component);
-            component = newCity.createComponent("GridPosition");
-            component.changePosition(coordinates.x, coordinates.y);
-            component.gridId = this.height * coordinates.y + coordinates.x;
-            newCity.addComponent(component);
-            //заменяем внутри массива значение с простыми координатами на ссылку, полученную в результате создания Entity. Это необходмо для работы функции прокладки дороги.
-            this.cityCoordinatesArray[i] = newCity;
-        }
-    };
-    return GroundMap;
-}());
 var Graphics = (function () {
     function Graphics(tileSize) {
         this.tileSize = tileSize;
@@ -759,263 +351,398 @@ var Graphics = (function () {
     };
     return Graphics;
 }());
-var EntityRoot = (function () {
-    function EntityRoot() {
-        this.entitiesArray = new Array();
+var GridPoint = (function () {
+    function GridPoint(id, point, cover, effect, speed, newIndex, coords) {
+        this.gridId = id;
+        this.pointType = point;
+        this.coverType = cover;
+        this.effectType = effect;
+        this.movementRatio = speed;
+        this.graphicIndex = newIndex;
+        this.gridCoords = coords;
     }
-    EntityRoot.prototype.createEntity = function (type) {
-        var entity;
-        var name;
-        var id = this.createId();
-        if (type == "Player") {
-            name = "Player";
+    return GridPoint;
+}());
+var GroundMap = (function () {
+    function GroundMap(width, height) {
+        this.width = width;
+        this.height = height;
+        this.size = width * height;
+        this.logicGrid = new Array();
+        this.cityCoordinatesArray = new Array();
+    }
+    GroundMap.prototype.generateBiomMap = function (primaryGroundBiom, params) {
+        // генерируем все параметры в определенном порядке
+        var obj = { "Earth": [], "Sand": [], "Forest": [], "Water": [], "Lava": [], "Swamp": [], "Rocks": [], "River": [], "City": [] };
+        this.fillLogicGrid(primaryGroundBiom);
+        for (var key in params) {
+            if (!(obj[key] === undefined))
+                obj[key] = params[key];
+        }
+        for (var prop in obj) {
+            var params = obj[prop];
+            if (params.length > 0)
+                this.generateGroundMapObjects(prop, params);
+        }
+    };
+    GroundMap.prototype.fillLogicGrid = function (type) {
+        var coverType;
+        var pointType;
+        var movementRatio;
+        if (type == "Earth") {
+            coverType = 4;
+            pointType = 1;
+            movementRatio = 0.8;
+        }
+        else if (type == "Sand") {
+            coverType = 5;
+            pointType = 1;
+            movementRatio = 0.6;
+        }
+        else if (type == "Water") {
+        }
+        else if (type == "Lava") {
+        }
+        else if (type == "Oil") {
+        }
+        else {
+            //default earth
+            coverType = 4;
+            pointType = 1;
+            movementRatio = 0.8;
+        }
+        for (var y = 0; y < this.height; y++) {
+            for (var x = 0; x < this.width; x++) {
+                var gridId = y * this.height + x;
+                var coords = new GridCoordinates(x, y);
+                var newGridPoint = new GridPoint(gridId, pointType, coverType, 0, movementRatio, 0, coords); //earth;
+                this.logicGrid.push(newGridPoint);
+            }
+        }
+    };
+    GroundMap.prototype.generateCities = function (args) {
+        var cityType = args[0];
+        var cityAmount = args[1] || Math.min(Math.round(this.width / 5), Math.round(this.height / 5)); // default;
+        var safeZone = args[2] || 2; //default;
+        var minRadius = args[3] || Math.round((this.width + this.height) / (2 * cityAmount)); //default
+        var temporaryArrayForCheckCoords = new Array();
+        for (var i = 0; i < cityAmount; i++) {
+            var pointX = Math.floor(Math.random() * (this.width - safeZone * 2) + safeZone);
+            var pointY = Math.floor(Math.random() * (this.height - safeZone * 2) + safeZone);
+            var check = true;
+            //проверяем, есть ли по близости город, в пределах минимального радиуса.
+            for (var j = 0; j < temporaryArrayForCheckCoords.length; j++) {
+                var cityX = temporaryArrayForCheckCoords[j].x;
+                var cityY = temporaryArrayForCheckCoords[j].y;
+                var difX = Math.abs(cityX - pointX);
+                var difY = Math.abs(cityY - pointY);
+                var coordDif = Math.round(Math.sqrt(difX * difX + difY * difY));
+                if (coordDif <= minRadius)
+                    check = false;
+            }
+            if (check) {
+                var newCoords = new GridCoordinates(pointX, pointY);
+                temporaryArrayForCheckCoords.push(newCoords);
+                var gridId = pointY * this.height + pointX;
+                this.logicGrid[gridId].coverType = 9;
+                this.logicGrid[gridId].pointType = 2;
+                this.logicGrid[gridId].movementRatio = 1;
+            }
+            else {
+                i--;
+            }
+        }
+        this.cityCoordinatesArray = temporaryArrayForCheckCoords;
+    };
+    //angular -  будет ли река поворачивать на 90 градусов ( true; false); type - 0 - simple river, 1 - river with lake, 2 - river with solid;
+    GroundMap.prototype.generateRiver = function (args) {
+        var type = args[0];
+        var liquidType = args[1] || 0; //simple river default;
+        var liquidAngulatChanse = args[2] || false; // no chanse on default;
+        var liquidWidth = args[3] || Math.round(this.width * 0.05); //max 5%;
+        var liquidOffset = args[4] || 1; //max 1;
+        var liquidStep = args[5] || 1; //max 1;
+        var liquidMaxWidth = args[6] || (liquidWidth + 5); // max +5;
+        var liquidMinWidth = args[7] || 2; // 0 - river can be underground;
+        var pointType;
+        var coverType;
+        var movementRatio;
+        if (type == "Water") {
+            coverType = 1;
+            movementRatio = 0.4;
+            pointType = 0;
+        }
+        else if (type == "Lava") {
+            coverType = 2;
+            movementRatio = 0;
+            pointType = 0;
+        }
+        else if (type == "Oil") {
+            coverType = 0;
+            movementRatio = 0.2;
+            pointType = 0;
+        }
+        var startingPointY = Math.floor(Math.random() * (this.height / 2 + 1)); // max start on half of grid on Y;
+        var startingPointX = Math.floor(Math.random() * (this.width - liquidWidth + 1));
+        var liquidHeight;
+        if (liquidType == 0) {
+            startingPointY = 0;
+            liquidHeight = this.height;
+        }
+        var liquidCurrentWidth = liquidWidth;
+        var nextPointX = startingPointX;
+        // no angular, no lakes and solids, right now only simple RiverL
+        for (var j = 0; j < liquidHeight; j++) {
+            if (j != 0) {
+                var liquidCurrentStep = Math.floor(Math.random() * (liquidStep * 2 + 1) - liquidStep);
+                var liquidDirectionOffset = Math.floor(Math.random() * (liquidOffset * 2 + 1) - liquidOffset); // -1 left, 0 - center, +1 - right;
+                liquidCurrentWidth = liquidCurrentWidth + liquidCurrentStep;
+                nextPointX += liquidDirectionOffset;
+                if (liquidCurrentWidth > liquidMaxWidth)
+                    liquidCurrentWidth = liquidMaxWidth;
+                else if (liquidCurrentWidth < liquidMinWidth)
+                    liquidCurrentWidth = liquidMinWidth;
+                else if (liquidCurrentWidth == 1)
+                    nextPointX -= liquidDirectionOffset;
+            }
+            for (var k = 0; k < liquidCurrentWidth; k++) {
+                var gridIndex = (startingPointY + j) * this.height + (nextPointX + k);
+                //проверяем, принадлежит ли наш индекс строке Y, на которой мы хотим разместить часть объекта;
+                if (gridIndex >= (startingPointY + j) * this.height && gridIndex < (startingPointY + j + 1) * this.height) {
+                    var point = this.logicGrid[gridIndex];
+                    point.pointType = pointType; // water
+                    point.movementRatio = movementRatio;
+                    point.coverType = coverType; // water;
+                }
+            }
+        }
+    };
+    // generating with WIDTH, so height is static; 
+    //offset - есть ли смещение влево или вправо и на сколько, step - на сколько сильно может уменьшаться или увеличиваться объект с каждой последующей Y  координатой;
+    GroundMap.prototype.generateGroundMapObjects = function (type, args) {
+        if (type == "River") {
+            this.generateRiver(args);
+            return;
         }
         else if (type == "City") {
-            name = "City";
+            this.generateCities(args);
+            return;
         }
-        else if (type == "Mob") {
-            name = 'Mob';
+        var pointType;
+        var movementRatio;
+        var coverType;
+        if (type == "Water") {
+            pointType = 0;
+            movementRatio = 0.4;
+            coverType = 1;
         }
-        else if (type == "NPC") {
-            name = "NPC";
+        else if (type == "Rocks") {
+            pointType = 2;
+            movementRatio = 0.2;
+            coverType = 8;
         }
-        var index = this.entitiesArray.length;
-        entity = new Entity(name, id, index);
-        this.entitiesArray.push(entity);
-        return entity;
+        else if (type == "Forest") {
+            pointType = 2;
+            movementRatio = 0.7;
+            coverType = 7;
+        }
+        else if (type == "Swamp") {
+            pointType = 1;
+            movementRatio = 0.5;
+            coverType = 3;
+        }
+        else if (type == "Earth") {
+            pointType = 1;
+            movementRatio = 0.8;
+            coverType = 4;
+        }
+        else if (type == "Sand") {
+            pointType = 1;
+            movementRatio = 0.5;
+            coverType = 5;
+        }
+        else if (type == "Lava") {
+            pointType = 0;
+            movementRatio = 0;
+            coverType = 2;
+        }
+        else if (type == "Oil") {
+            pointType = 0;
+            movementRatio = 0;
+            coverType = 0;
+        }
+        var liquidAmount = args[0] || 1; // max 1
+        var liquidWidth = args[1] || Math.round(this.width / 10); // max 10%
+        var liquidHeight = args[2] || Math.round(this.height / 10); // max 10%
+        var liquidOffset = args[3] || 1; //max 1;
+        var liquidStep = args[4] || 1; //max 1;
+        var liquidMaxWidth = args[5] || (liquidWidth + 5); // max +5;
+        var liquidMinWidth = 1; //default;
+        for (var i = 0; i < liquidAmount; i++) {
+            // для того, что бы вписать объект, что бы он не выходил за границы, сделаю стартовые точки с учетом длинны и ширины объекта.
+            var startingPointY = Math.floor(Math.random() * (this.height - liquidHeight + 1));
+            var startingPointX = Math.floor(Math.random() * (this.width - liquidWidth + 1));
+            var liquidCurrentWidth = liquidWidth;
+            var nextPointX = startingPointX;
+            for (var j = 0; j < liquidHeight; j++) {
+                if (j != 0) {
+                    var liquidCurrentStep = Math.floor(Math.random() * (liquidStep * 2 + 1) - liquidStep);
+                    var liquidDirectionOffset = Math.floor(Math.random() * (liquidOffset * 2 + 1) - liquidOffset); // -1 left, 0 - center, +1 - right;
+                    liquidCurrentWidth = liquidCurrentWidth + liquidCurrentStep;
+                    nextPointX = nextPointX + liquidDirectionOffset;
+                    if (liquidCurrentWidth > liquidMaxWidth)
+                        liquidCurrentWidth = liquidMaxWidth;
+                    else if (liquidCurrentWidth == 1)
+                        nextPointX -= liquidDirectionOffset;
+                }
+                for (var k = 0; k < liquidCurrentWidth; k++) {
+                    var gridIndex = (startingPointY + j) * this.height + (nextPointX + k);
+                    //проверяем, принадлежит ли наш индекс строке Y, на которой мы хотим разместить часть объекта;
+                    if (gridIndex >= (startingPointY + j) * this.height && gridIndex < (startingPointY + j + 1) * this.height) {
+                        var point = this.logicGrid[gridIndex];
+                        point.pointType = pointType;
+                        point.movementRatio = movementRatio;
+                        point.coverType = coverType;
+                    }
+                }
+            }
+        }
     };
-    EntityRoot.prototype.removeEntity = function (id) {
-        var index = -1;
-        var result = null;
-        for (var i = 0; i < this.entitiesArray.length; i++) {
-            var entity = this.entitiesArray[i];
-            if (entity.getComponent('Type').entityId == id) {
-                result = entity;
-                index = i;
+    //amount - количество дорог идущих от 1 города ( максимум );
+    GroundMap.prototype.generateRoadFromCityToCity = function (amount) {
+        var roadAmount = amount || 2; //2 max;
+        var distanceArray = null;
+        for (var j = 0; j < this.cityCoordinatesArray.length; j++) {
+            var city = this.cityCoordinatesArray[j];
+            distanceArray = this.calculateDistanceFromCity(city);
+            if (distanceArray != null) {
+                for (var i = 0; i < roadAmount; i++) {
+                    this.createRoadFromCityToCity(city, distanceArray);
+                }
+            }
+        }
+    };
+    GroundMap.prototype.createRoadFromCityToCity = function (city, citiesArray) {
+        var newCity = null;
+        var newCityPosition = null;
+        var newCityName = null;
+        var currentCity = city.getComponent('City');
+        var currentCityName = city.getComponent('Name').surname;
+        var currentCityPosition = city.getComponent('GridPosition').position;
+        for (var k = 0; k < citiesArray.length; k++) {
+            var tempCityName = citiesArray[k].getComponent('Name').surname;
+            var tempCity = citiesArray[k].getComponent('City');
+            if (tempCityName != currentCityName && !tempCity.checkRoadToCity(currentCityName)) {
+                newCity = tempCity;
+                newCityPosition = citiesArray[k].getComponent('GridPosition').position;
+                newCityName = citiesArray[k].getComponent('Name').surname;
+                if (k > 0) {
+                    var previousCityName = citiesArray[k - 1].getComponent('Name').surname;
+                    if (!tempCity.checkRoadToCity(previousCityName))
+                        break;
+                }
+            }
+        }
+        if (newCity == null)
+            return;
+        var pointX = currentCityPosition.x;
+        var pointY = currentCityPosition.y;
+        var toPointX = newCityPosition.x;
+        var toPointY = newCityPosition.y;
+        var nextPointX = pointX;
+        var nextPointY = pointY;
+        while (true) {
+            var difX = nextPointX - toPointX;
+            var difY = nextPointY - toPointY;
+            var directionX = 0;
+            var directionY = 0;
+            if (difX < 0)
+                directionX = 1;
+            else if (difX > 0)
+                directionX = -1;
+            if (difY < 0)
+                directionY = 1;
+            else if (difY > 0)
+                directionY = -1;
+            if (Math.abs(difX) > Math.abs(difY)) {
+                if (difX != 0) {
+                    nextPointX += directionX;
+                    var gridIndex = nextPointY * this.height + nextPointX;
+                    var point = this.logicGrid[gridIndex];
+                    if (point.coverType != 9) {
+                        point.pointType = 1; // flat tile;
+                        point.coverType = 6; // road
+                        point.movementRatio = 1; // normal
+                    }
+                }
+            }
+            else {
+                if (difY != 0) {
+                    nextPointY += directionY;
+                    var gridIndex = nextPointY * this.height + nextPointX;
+                    var point = this.logicGrid[gridIndex];
+                    if (point.coverType != 9) {
+                        point.pointType = 1; // flat tile;
+                        point.coverType = 6; // road
+                        point.movementRatio = 1; // normal
+                    }
+                }
+            }
+            //exit from endless loop;
+            if (difX == 0 && difY == 0) {
+                currentCity.roadAmount++;
+                currentCity.addRoadToCity(newCityName);
+                newCity.roadAmount++;
+                newCity.addRoadToCity(currentCityName);
                 break;
             }
         }
-        this.entitiesArray.splice(index, 1);
+    };
+    GroundMap.prototype.calculateDistanceFromCity = function (city) {
+        var dsArray = new Array();
+        var temporary = new Array();
+        var result = new Array();
+        var pointX = city.getComponent("GridPosition").position.x;
+        var pointY = city.getComponent("GridPosition").position.y;
+        //собираем информацию о дистанции до города со всех городов.
+        for (var i = 0; i < this.cityCoordinatesArray.length; i++) {
+            var newCity = this.cityCoordinatesArray[i];
+            var newCityName = newCity.getComponent('Name').surname;
+            //
+            var newPointX = newCity.getComponent("GridPosition").position.x;
+            var newPointY = newCity.getComponent("GridPosition").position.y;
+            var difX = Math.abs(pointX - newPointX);
+            var difY = Math.abs(pointX - newPointX);
+            var dif = Math.round(Math.sqrt(difX * difX + difY * difY));
+            dsArray.push(dif); // пушим дистанцию
+        }
+        temporary = dsArray.slice(); // copy;
+        temporary.sort(function (a, b) { return a - b; }); // сортируем.
+        //делаем отправной массив с ссылками на города. но в порядке от самых ближайших городов до самых дальних.
+        for (var j = 0; j < dsArray.length; j++) {
+            var searchNum = temporary[j];
+            var index = dsArray.indexOf(searchNum);
+            result.push(this.cityCoordinatesArray[index]);
+        }
         return result;
     };
-    EntityRoot.prototype.getEntityById = function (id) {
-        for (var i = 0; i < this.entitiesArray.length; i++) {
-            var entityId = this.entitiesArray[i].getComponent("Type").entityId;
-            if (entityId == id)
-                return this.entitiesArray[i];
+    GroundMap.prototype.createCityEntities = function (entityRoot, namesArray) {
+        for (var i = 0; i < this.cityCoordinatesArray.length; i++) {
+            var coordinates = this.cityCoordinatesArray[i];
+            var newCity = entityRoot.createEntity("City");
+            var component = newCity.createComponent("City");
+            newCity.addComponent(component);
+            component = newCity.createComponent("Name");
+            component.init(namesArray[0], namesArray[1]);
+            component.generateSurname();
+            newCity.addComponent(component);
+            component = newCity.createComponent("GridPosition");
+            component.changePosition(coordinates.x, coordinates.y);
+            component.gridId = this.height * coordinates.y + coordinates.x;
+            newCity.addComponent(component);
+            //заменяем внутри массива значение с простыми координатами на ссылку, полученную в результате создания Entity. Это необходмо для работы функции прокладки дороги.
+            this.cityCoordinatesArray[i] = newCity;
         }
-        return null;
     };
-    EntityRoot.prototype.createId = function () {
-        var id = "0";
-        return id;
-    };
-    return EntityRoot;
+    return GroundMap;
 }());
-var Entity = (function () {
-    function Entity(name, id, index) {
-        this.components = new Array();
-        this.init(name, id, index);
-    }
-    Entity.prototype.init = function (name, id, index) {
-        // создаем компомнент Type;
-        var component = this.createComponent('Type');
-        component.init(name, id, index);
-        this.addComponent(component);
-    };
-    Entity.prototype.createComponent = function (componentName) {
-        var component;
-        if (componentName == "City")
-            component = new City(this);
-        else if (componentName == "Name")
-            component = new Name(this);
-        else if (componentName == "Type")
-            component = new Type(this);
-        else if (componentName == "GridPosition")
-            component = new GridPosition(this);
-        else if (componentName == "Move")
-            component = new Move(this);
-        else if (componentName == "Draw")
-            component = new Draw(this);
-        else if (componentName == "Type")
-            component = new Type(this);
-        else {
-            console.log("Not found component with name: " + componentName + "; Error in Entity/createComponent");
-            return null;
-        }
-        return component;
-    };
-    Entity.prototype.addComponent = function (component) {
-        var index = this.checkComponentInComponents(component);
-        component.changeParent(this); // меняем родителя, если вдруг по каким-то причинам компонент создала другая Entity.
-        if (index == 0) {
-            this.components.push(component);
-        }
-        else {
-            this.components[index] = component;
-        }
-    };
-    Entity.prototype.removeComponent = function (componentName) {
-        var component;
-        var index = -1;
-        for (var i = 0; i < this.components.length; i++) {
-            var curComponent = this.components[i].componentName;
-            if (curComponent == componentName) {
-                component = this.components[i];
-                index = i;
-                break;
-            }
-        }
-        this.components.splice(index, 1);
-        return component;
-    };
-    Entity.prototype.getComponent = function (componentName) {
-        for (var i = 0; i < this.components.length; i++) {
-            if (this.components[i].componentName == componentName)
-                return this.components[i];
-        }
-        return null;
-    };
-    Entity.prototype.checkComponentInComponents = function (component) {
-        var newComponentName = component.componentName;
-        for (var i = 0; i < this.components.length; i++) {
-            if (this.components[i].componentName == newComponentName)
-                return i;
-        }
-        return 0;
-    };
-    Entity.prototype.update = function (dx) {
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].update(dx);
-        }
-    };
-    return Entity;
-}());
-var Component = (function () {
-    function Component(newName, parent) {
-        this.componentName = newName;
-        this.parent = parent;
-    }
-    Component.prototype.update = function (dx) {
-    };
-    Component.prototype.changeParent = function (newParent) {
-        this.parent = newParent;
-    };
-    return Component;
-}());
-var City = (function (_super) {
-    __extends(City, _super);
-    function City(parent) {
-        var _this = _super.call(this, "City", parent) || this;
-        _this.roadAmount = 0;
-        _this.roadToCities = new Array();
-        return _this;
-    }
-    City.prototype.checkRoadToCity = function (cityName) {
-        for (var i = 0; i < this.roadToCities.length; i++) {
-            if (cityName == this.roadToCities[i])
-                return true;
-        }
-        return false;
-    };
-    City.prototype.addRoadToCity = function (cityName) {
-        this.roadToCities.push(cityName);
-    };
-    return City;
-}(Component));
-var Name = (function (_super) {
-    __extends(Name, _super);
-    function Name(parent) {
-        return _super.call(this, "Name", parent) || this;
-    }
-    Name.prototype.init = function (namesArray, surnamesArray) {
-        this.namesArray = namesArray;
-        this.surnamesArray = surnamesArray;
-    };
-    Name.prototype.generateName = function (sex) {
-        var firstPartName = this.namesArray[0];
-        var secondPartName = this.namesArray[1];
-        var thirdPartNameMale = this.namesArray[2];
-        var thirdPartNameFemale = this.namesArray[3];
-        var fname = Math.floor(Math.random() * firstPartName.length);
-        var sname = Math.floor(Math.random() * secondPartName.length);
-        var tname;
-        if (sex == 0) {
-            tname = thirdPartNameMale[Math.floor(Math.random() * thirdPartNameMale.length)];
-        }
-        else {
-            tname = thirdPartNameFemale[Math.floor(Math.random() * thirdPartNameFemale.length)];
-        }
-        this.name = firstPartName[fname] + secondPartName[sname] + tname;
-    };
-    Name.prototype.generateSurname = function () {
-        var firstPartSurname = this.surnamesArray[0];
-        var secondPartSurname = this.surnamesArray[1];
-        var thirdPartSurname = this.surnamesArray[2];
-        var fname = Math.floor(Math.random() * firstPartSurname.length);
-        var sname = Math.floor(Math.random() * secondPartSurname.length);
-        var tname = Math.floor(Math.random() * thirdPartSurname.length);
-        this.surname = firstPartSurname[fname] + secondPartSurname[sname] + thirdPartSurname[tname];
-    };
-    return Name;
-}(Component));
-var Move = (function (_super) {
-    __extends(Move, _super);
-    function Move(parent) {
-        return _super.call(this, "Move", parent) || this;
-    }
-    Move.prototype.init = function (gridTileSize, tileSize, x, y) {
-        this.halfTileSize = tileSize / 2;
-        this.gridTileSize = gridTileSize;
-        this.x = x;
-        this.y = y;
-    };
-    Move.prototype.move = function (x, y) {
-        this.x += x;
-        this.y += y;
-        this.gridMove();
-    };
-    Move.prototype.gridMove = function () {
-        var gridX = Math.floor(this.x / this.gridTileSize + this.halfTileSize);
-        var gridY = Math.floor(this.y / this.gridTileSize + this.halfTileSize);
-        var component = this.parent.getComponent("GridPosition");
-        component.position.x = gridX;
-        component.position.y = gridY;
-    };
-    return Move;
-}(Component));
-var Draw = (function (_super) {
-    __extends(Draw, _super);
-    function Draw(parent) {
-        return _super.call(this, "Draw", parent) || this;
-    }
-    Draw.prototype.init = function (tileSize) {
-        this.tileSize = tileSize;
-    };
-    return Draw;
-}(Component));
-var GridPosition = (function (_super) {
-    __extends(GridPosition, _super);
-    function GridPosition(parent) {
-        var _this = _super.call(this, "GridPosition", parent) || this;
-        _this.position = new GridCoordinates(0, 0);
-        return _this;
-    }
-    GridPosition.prototype.changePosition = function (x, y) {
-        this.position.x = x;
-        this.position.y = y;
-    };
-    return GridPosition;
-}(Component));
-var Type = (function (_super) {
-    __extends(Type, _super);
-    function Type(parent) {
-        return _super.call(this, "Type", parent) || this;
-    }
-    Type.prototype.init = function (name, entityId, arrayIndex) {
-        this.entityName = name;
-        this.entityId = entityId;
-        this.arrayIndex = arrayIndex;
-    };
-    return Type;
-}(Component));

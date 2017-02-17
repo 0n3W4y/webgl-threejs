@@ -22,7 +22,7 @@ function createGraphics(){
 }
 
 function initLogic(){
-	var params = { "Forest": [50, 15, 10, 1, 1, 20], "Rocks": [50, 8, 5, 1, 1, 12], "Water": [2, 8], "Swamp": [6, 2], "Sand": [4, 6], "River": ["Water", 0, false, 3, 1, 1, 4, 2], "City": [null, 16, 2, 8] };
+	var params = { "Forest": [50, 15, 10, 1, 1, 20], "Rocks": [50, 8, 5, 1, 1, 12], "Water": [2, 8], "Swamp": [12, 3, 3], "Sand": [4, 6], "River": ["Water", 0, false, 3, 1, 1, 4, 2], "City": [null, 16, 2, 8] };
 	ground.generateBiomMap( "Earth", params );
 	ground.createCityEntities( entityRoot, [null, dataCityNames]);
 	ground.generateRoadFromCityToCity(1);
