@@ -1,3 +1,6 @@
+import { GridCoordinates } from "./GridCoordinates";
+import { GridPoint } from "./GridPoint";
+
 class GroundMap{
 	public width:number;
 	public height:number;

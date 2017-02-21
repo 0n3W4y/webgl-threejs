@@ -1,12 +1,18 @@
 import { GridCoordinates } from "./GridCoordinates";
-import { Component, Name, Type, City, GridPosition, Move, Draw } from "./Components";
+import { Component } from "./Components/Component";
+import { Name } from "./Components/Name";
+import { Type } from "./Components/Type";
+import { City } from "./Components/City";
+import { GridPosition } from "./Components/GridPosition";
+import { Move } from "./Components/Move";
+import { Draw } from "./Components/Draw";
 
 export class Entity {
 
-	private components:Array<any>;
+	private components:any;
 
 	constructor( name, id, index ){
-		this.components = new Array();
+		this.components = new Object();
 		this.init( name, id, index );
 	}
 
@@ -40,53 +46,26 @@ export class Entity {
 		return component;
 	}
 
-	public addComponent(component):void{
-		var index = this.checkComponentInComponents(component);
-		component.changeParent( this ); // меняем родителя, если вдруг по каким-то причинам компонент создала другая Entity.
-		if (index == 0){
-			this.components.push(component);
-		}else{
-			this.components[index] = component;
-		}
+	public addComponent( component ):void{
+		this.components[component.componentName] = component;
 	}
 
 	public removeComponent( componentName ):any{
-		var component;
-		var index = -1;
-		for( var i = 0; i < this.components.length; i++ ){
-			var curComponent = this.components[i].componentName;
-			if( curComponent == componentName ){
-				component = this.components[i];
-				index = i;
-				break;
-			}
-		}
-
-		this.components.splice( index, 1 );
+		var component = this.components[componentName];
+		delete this.components[componentName];
 		return component;
 	}
 
-	public getComponent(componentName):any{
-		for (var i = 0; i < this.components.length; i++){
-			if (this.components[i].componentName == componentName)
-				return this.components[i];
-		}
-		return null;
+	public getComponent( componentName ):any{
+		if( !( this.components[componentName] === undefined ) )
+			return this.components[componentName];
+		else
+			return null;
 	}
 
-	private checkComponentInComponents(component):number{
-		var newComponentName = component.componentName;
-		for (var i = 0; i < this.components.length; i++){
-			if (this.components[i].componentName == newComponentName)
-				return i;		
-		}
-
-		return 0;
-	}
-
-	public update(dx):void{
-		for (var i = 0; i < this.components.length; i++){
-			this.components[i].update(dx);
+	public update( dx ):void{
+		for( var key in this.components ){
+			this.components[key].update( dx );
 		}
 	}
 }

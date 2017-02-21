@@ -1,4 +1,4 @@
-class GridPoint {
+export class GridPoint {
 
 	public gridId: number;
 	public pointType: number; // 0-liquid, 1 - flat, 2 - cubic;

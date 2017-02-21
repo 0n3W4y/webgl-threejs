@@ -20,7 +20,15 @@ function createGraphics(){
 }
 
 function initLogic(){
-	var params = { "Forest": [50, 15, 10, 1, 1, 20], "Rocks": [50, 8, 5, 1, 1, 12], "Water": [2, 8], "Swamp": [12, 3, 3], "Sand": [4, 6], "River": ["Water", 0, false, 3, 1, 1, 4, 2], "City": [null, 16, 2, 8] };
+	var params = { 
+		"Forest": [50, 15, 10, 1, 1, 20],
+		"Rocks": [50, 8, 5, 1, 1, 12],
+		"Water": [2, 8],
+		"Swamp": [12, 3, 3],
+		"Sand": [4, 6],
+		"River": ["Water", 0, false, 3, 1, 1, 4, 2],
+		"City": [null, 16, 2, 8]
+	};
 	ground.generateBiomMap( "Earth", params );
 	ground.createCityEntities( entityRoot, [null, dataCityNames]);
 	ground.generateRoadFromCityToCity(1);
@@ -35,6 +43,11 @@ function createPlayer(){
 	component.generateName(0);
 	component.generateSurname();
 	player.addComponent( component );
+	component = player.createComponent( "GridPosition" );
+	component.changePosition( 0, 0 );
+	player.addComponent( component );
+	component = player.createComponent( "Move" );
+	component.init( 128, 100, 100, 64, 0, 0 );
 }
 
 /*

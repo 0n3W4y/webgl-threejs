@@ -60,6 +60,10 @@ export class EntityRoot{
 		return null;
 	}
 
+	public getListOfEntitiesByParams( params ):any{
+		return null;
+	}
+
 	private createId(){
 		var id = "0";
 		return id;
